@@ -1,0 +1,21 @@
+# Composite: several topics x several languages, excluding tiny series from rankings,
+# with an explicit extra article for one language.
+name: science-topics-cee
+topics:
+  - qid: Q333
+    label: astronomy
+  - qid: Q413
+    label: physics
+  - label: intermittent fasting
+    qid: Q1666254
+    articles:
+      pl: [Głodówka lecznicza]   # confirmed by the user as the closest pl article
+languages: [uk, pl, cs]
+start: 2023-01
+end: 2026-08
+metric: share
+comparisons: [languages, topics]
+options:
+  min_median_daily_views: 10
+output:
+  charts: [indexed]

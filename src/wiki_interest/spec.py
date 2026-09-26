@@ -142,7 +142,38 @@ def validate_spec(data: dict) -> AnalysisSpec:
         ) from None
 
 
-def load_spec(path: str | Path) -> AnalysisSpec:
+LIST_FIELDS = {"languages", "comparisons", "output.charts"}
+
+
+def apply_overrides(data: dict, overrides: list[str]) -> dict:
+    """Apply ``key=value`` edits, e.g. ``period=36m``, ``languages=pl,cs,sk``,
+    ``output.report.lang=uk``. List fields take comma-separated values."""
+    for item in overrides:
+        key, sep, raw = item.partition("=")
+        key = key.strip()
+        if not sep or not key:
+            raise SpecError(
+                f"--set '{item}' must look like key=value.",
+                hint="e.g. --set period=36m --set languages=pl,cs,sk",
+            )
+        if key in LIST_FIELDS:
+            value = [v.strip() for v in raw.split(",") if v.strip()]
+        else:
+            value = yaml.safe_load(raw) if raw.strip() else None
+        node = data
+        parts = key.split(".")
+        for part in parts[:-1]:
+            if not isinstance(node.get(part), dict):
+                node[part] = {}
+            node = node[part]
+        node[parts[-1]] = value
+        if key == "period":  # a new period replaces explicit bounds from the saved spec
+            data.pop("start", None)
+            data.pop("end", None)
+    return data
+
+
+def read_spec_data(path: str | Path) -> dict:
     p = Path(path)
     if p.is_dir():
         p = p / "spec.yaml"
@@ -152,6 +183,15 @@ def load_spec(path: str | Path) -> AnalysisSpec:
         data = yaml.safe_load(p.read_text(encoding="utf-8"))
     except yaml.YAMLError as exc:
         raise SpecError(f"{p} is not valid YAML: {exc}", hint="Fix the YAML syntax.") from None
+    if not isinstance(data, dict):
+        raise SpecError(f"{p} must contain a YAML mapping.", hint="See references/spec-schema.md.")
+    return data
+
+
+def load_spec(path: str | Path, overrides: list[str] | None = None) -> AnalysisSpec:
+    data = read_spec_data(path)
+    if overrides:
+        data = apply_overrides(data, overrides)
     return validate_spec(data)
 
 

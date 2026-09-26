@@ -68,10 +68,9 @@ def resolve(
         client = WikimediaClient()
         out = resolve_topic(client, topic, validate_langs(_split(langs)), limit=limit)
         out = {"ok": True, "command": "resolve", **out}
-        if out["status"] == "resolved":
-            out["next_step"] = (
-                f"wiki-interest analyze --qid {out['qid']} --langs {langs} --period 24m"
-            )
+        if out["status"] in ("resolved", "needs_confirmation"):
+            cmd = f"wiki-interest analyze --qid {out['qid']} --langs {langs} --period 24m"
+            out["next_step"] = cmd if out["status"] == "resolved" else "Confirm with the user, then: " + cmd
         return out
 
     _run(go)
@@ -160,6 +159,28 @@ def compare(
             }
         )
         return run_analysis(spec, command="compare")
+
+    _run(go)
+
+
+@app.command()
+def run(
+    spec_path: str = typer.Argument(..., help="spec.yaml, or a previous run dir (reuses its spec)."),
+    set_: list[str] = typer.Option([], "--set", help="Override: key=value, e.g. period=36m, languages=pl,cs,sk."),
+    save_as: Optional[str] = typer.Option(None, "--save-as", help="Also write the edited spec to this path."),
+):
+    """Run a YAML analysis spec (composite requests, follow-ups)."""
+
+    def go():
+        from .engine import run_analysis
+        from .spec import dump_spec, load_spec
+
+        spec = load_spec(spec_path, set_)
+        if save_as:
+            from pathlib import Path
+
+            dump_spec(spec, Path(save_as))
+        return run_analysis(spec, command="run")
 
     _run(go)
 

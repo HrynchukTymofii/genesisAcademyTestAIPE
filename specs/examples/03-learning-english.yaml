@@ -1,0 +1,18 @@
+# "Compare interest in learning English across chosen language editions; one-page
+#  report on which audiences to research next and why."
+# "Learning English" alone resolves to a VOA radio programme, so the topic is a SET
+# of intent-bearing articles summed per language: TOEFL + IELTS + ESL.
+name: learning-english
+topics:
+  - label: learning English (TOEFL + IELTS + ESL)
+    qids: [Q487425, Q490396, Q130192]
+languages: [uk, pl, cs, ro, tr, vi]
+period: 36m
+metric: share
+comparisons: [languages]
+output:
+  charts: [indexed, share]
+  report:
+    lang: en
+    # summary: the agent writes 2-4 sentences AFTER reading the run JSON, then runs
+    #   wiki-interest report <run_dir> --summary "..." --lang en

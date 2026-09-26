@@ -1,0 +1,13 @@
+# "Compare growth of interest in intermittent fasting in Polish vs Czech Wikipedia over 2 years."
+# Q1666254 has no Polish article linked in Wikidata; the run reports that and lists
+# pl search suggestions. If the user confirms one, add it under articles: {pl: [...]}.
+name: fasting-pl-vs-cs
+topics:
+  - qid: Q1666254
+    label: intermittent fasting
+languages: [pl, cs]
+period: 24m
+metric: share
+comparisons: [languages]
+output:
+  charts: [indexed]

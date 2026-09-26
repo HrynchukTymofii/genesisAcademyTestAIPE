@@ -63,6 +63,20 @@ def _resolve_topic(client, t: TopicSpec, langs: list[str], i: int) -> dict:
                     for c in r["candidates"]
                 ],
             )
+        if r["status"] == "needs_confirmation":
+            raise AmbiguousTopicError(
+                f"Topic '{t.text}' (topics[{i}]) matched {r['qid']} ({r['label']}: "
+                f"{r['description']}), which needs confirmation.",
+                hint="Ask the user whether this entity is what they mean; if yes use --qid "
+                f"{r['qid']} (or qid: in the spec), otherwise search a more specific name.",
+                candidates=[
+                    {"qid": r["qid"], "label": r["label"], "description": r["description"]}
+                ]
+                + [
+                    {k: c[k] for k in ("qid", "label", "description", "editions")}
+                    for c in r.get("alternatives", [])
+                ],
+            )
         if r["status"] == "not_found":
             raise ResolveError(
                 f"No Wikidata entity for topic '{t.text}' (topics[{i}]).", hint=r["next_step"]

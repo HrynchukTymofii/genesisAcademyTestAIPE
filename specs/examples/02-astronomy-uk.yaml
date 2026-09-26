@@ -1,0 +1,12 @@
+# "Is interest in astronomy growing in Ukrainian Wikipedia, and how much can we trust it?"
+# 36 months so seasonality (school year) can be assessed; raw views are reported
+# alongside share because the whole uk edition's traffic changes.
+name: astronomy-uk
+topics:
+  - qid: Q333
+    label: astronomy
+languages: [uk]
+period: 36m
+metric: share
+output:
+  charts: [indexed, raw]
