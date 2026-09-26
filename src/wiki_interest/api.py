@@ -246,5 +246,22 @@ class WikimediaClient:
         page = pages[0]
         return page["title"], [r["title"] for r in page.get("redirects", [])]
 
+    def search_titles(self, domain: str, text: str, limit: int = 3) -> list[str]:
+        """Full-text search inside one edition (suggestions for unlinked articles)."""
+        data = self.get_json(
+            f"https://{domain}/w/api.php",
+            {
+                "action": "query",
+                "list": "search",
+                "srsearch": text,
+                "srnamespace": "0",
+                "srlimit": str(limit),
+                "srprop": "",
+                "format": "json",
+            },
+            ttl=META_TTL,
+        )
+        return [h["title"] for h in (data or {}).get("query", {}).get("search", [])]
+
     def close(self) -> None:
         self._http.close()

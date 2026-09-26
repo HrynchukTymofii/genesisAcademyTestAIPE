@@ -11,6 +11,7 @@ import typer
 from .api import WikimediaClient
 from .errors import WikiInterestError
 from .resolve import resolve_topic, validate_langs
+from .spec import validate_spec
 
 app = typer.Typer(
     add_completion=False,
@@ -38,6 +39,16 @@ def _run(fn, *args, **kwargs) -> None:
     except WikiInterestError as exc:
         emit(exc.to_dict())
         raise typer.Exit(1)
+    except Exception as exc:  # never dump a traceback on the model
+        emit(
+            {
+                "ok": False,
+                "error": "internal_error",
+                "message": f"{type(exc).__name__}: {exc}",
+                "next_step": "Retry once; if it fails again, report this message to the user.",
+            }
+        )
+        raise typer.Exit(2)
     emit(out)
 
 
@@ -62,6 +73,93 @@ def resolve(
                 f"wiki-interest analyze --qid {out['qid']} --langs {langs} --period 24m"
             )
         return out
+
+    _run(go)
+
+
+def _period_fields(period, start, end, metric) -> dict:
+    d = {"period": period, "metric": metric}
+    if start:
+        d["start"] = start
+    if end:
+        d["end"] = end
+    return d
+
+
+def _charts(charts: str) -> list[str]:
+    return _split(charts)
+
+
+@app.command()
+def analyze(
+    qid: list[str] = typer.Option([], "--qid", help="Wikidata QID; repeat to sum several entities into one topic."),
+    topic: Optional[str] = typer.Option(None, "--topic", help="Topic text (must resolve unambiguously). Prefer --qid."),
+    article: list[str] = typer.Option([], "--article", help="Extra article as lang:Title; repeatable."),
+    label: Optional[str] = typer.Option(None, "--label", help="Display name for the topic."),
+    langs: str = typer.Option(..., "--langs", help="Comma-separated language codes, e.g. pl,cs."),
+    period: str = typer.Option("24m", "--period", help="Months/years back from last complete month: 24m, 3y."),
+    start: Optional[str] = typer.Option(None, "--start", help="YYYY-MM (overrides --period)."),
+    end: Optional[str] = typer.Option(None, "--end", help="YYYY-MM (default: last complete month)."),
+    metric: str = typer.Option("share", "--metric", help="share (default, for verdicts) or raw."),
+    charts: str = typer.Option("", "--charts", help="Also draw charts: indexed,share,raw."),
+):
+    """One topic (one or more entities/articles summed) across one or more languages."""
+
+    def go():
+        from .engine import run_analysis
+
+        arts: dict[str, list[str]] = {}
+        for a in article:
+            lang, sep, title = a.partition(":")
+            if not sep or not title.strip():
+                from .errors import SpecError
+
+                raise SpecError(f"--article '{a}' must look like lang:Title", hint="e.g. --article pl:Post")
+            arts.setdefault(lang.strip().lower(), []).append(title.strip())
+        t: dict = {"label": label}
+        if topic:
+            t["text"] = topic
+        if qid:
+            t["qid"], t["qids"] = qid[0], qid[1:]
+        if arts:
+            t["articles"] = arts
+        spec = validate_spec(
+            {
+                "topics": [t],
+                "languages": _split(langs),
+                **_period_fields(period, start, end, metric),
+                "output": {"charts": _charts(charts)},
+            }
+        )
+        return run_analysis(spec, command="analyze")
+
+    _run(go)
+
+
+@app.command()
+def compare(
+    qids: str = typer.Option(..., "--qids", help="Comma-separated QIDs; each is a separate topic."),
+    langs: str = typer.Option(..., "--langs", help="Comma-separated language codes."),
+    period: str = typer.Option("24m", "--period"),
+    start: Optional[str] = typer.Option(None, "--start"),
+    end: Optional[str] = typer.Option(None, "--end"),
+    metric: str = typer.Option("share", "--metric"),
+    charts: str = typer.Option("", "--charts", help="Also draw charts: indexed,share,raw."),
+):
+    """Several topics side by side in one or more languages."""
+
+    def go():
+        from .engine import run_analysis
+
+        spec = validate_spec(
+            {
+                "topics": [{"qid": q} for q in _split(qids)],
+                "languages": _split(langs),
+                **_period_fields(period, start, end, metric),
+                "output": {"charts": _charts(charts)},
+            }
+        )
+        return run_analysis(spec, command="compare")
 
     _run(go)
 

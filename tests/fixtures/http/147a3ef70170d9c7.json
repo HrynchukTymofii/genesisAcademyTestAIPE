@@ -1,0 +1,1 @@
+{"url": "https://cs.wikipedia.org/w/api.php?action=query&format=json&formatversion=2&prop=redirects&rdlimit=50&rdnamespace=0&redirects=1&titles=P%C5%99eru%C5%A1ovan%C3%BD+p%C5%AFst", "status": 200, "body": "{\"batchcomplete\":true,\"query\":{\"pages\":[{\"pageid\":1632302,\"ns\":0,\"title\":\"Přerušovaný půst\"}]}}"}

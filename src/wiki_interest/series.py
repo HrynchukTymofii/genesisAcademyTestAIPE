@@ -223,6 +223,13 @@ def build_topic_series(
     return TopicSeries(topic, lang, domain, canonical, fetch, period, views, total, warnings)
 
 
+def auto_base_months(n_months: int, base_months: int | None = None) -> int:
+    """12-month base (seasonality-neutral) when the series is long enough, else 3."""
+    if base_months:
+        return base_months
+    return 12 if n_months >= 24 else 3
+
+
 def indexed(series: pd.Series, base_months: int = 3) -> pd.Series:
     """Index a monthly series so the mean of the first ``base_months`` months = 100."""
     base = series.iloc[:base_months].mean()
