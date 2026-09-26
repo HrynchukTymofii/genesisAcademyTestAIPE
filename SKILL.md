@@ -9,12 +9,16 @@ The tool does ALL data work and statistics. You translate the request into comma
 read the JSON they print, and write the answer. Never compute numbers yourself.
 
 `WI` below means: `uv run --project <skill_dir> wiki-interest`
-(`<skill_dir>` = the directory containing this file). Run commands from the user's
-working directory; results go to `./wiki-interest-runs/<id>/`.
+(`<skill_dir>` = the absolute path of the directory containing this file), e.g.
+`uv run --project "C:/path/to/wiki-interest" wiki-interest resolve "astronomy" --langs uk`.
+Run every command from the user's current directory. Never `cd` into `<skill_dir>`:
+results go to `./wiki-interest-runs/<id>/` under the directory you run from.
 
 ## 1. Setup check (once per session)
 
-1. `uv --version` — if missing, tell the user to install uv (https://docs.astral.sh/uv/).
+1. `uv --version`. If not found, try `python -m uv --version`; if that works, use
+   `python -m uv` wherever this file says `uv`. If both fail, ask the user to install
+   uv (https://docs.astral.sh/uv/) and stop.
 2. `WI --help` — the first call installs dependencies automatically (`uv sync`).
    If it fails with a certificate error, retry with env `UV_SYSTEM_CERTS=1`.
 

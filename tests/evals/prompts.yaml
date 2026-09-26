@@ -1,0 +1,127 @@
+# Eval prompts for the wiki-interest skill, run with `claude --model haiku`.
+# Each case: id, turns (1+ user messages), and a checklist.
+#
+# Automatic checks (grade.py), applied to every case unless disabled:
+#   resolve_first      the first wiki-interest command is `resolve` (off for follow-ups)
+#   numbers_match      every number in the final answer appears in the tool JSON outputs
+#   confidence_label   the answer contains a confidence label (strong|moderate|weak|insufficient)
+#   one_page_pdf       if a report was produced, the PDF has exactly one page
+# Per-case checks:
+#   must_ask           the agent must stop and ask (no analyze/compare/run before asking)
+#   expect_commands    regexes that must match some wiki-interest command
+#   forbid_commands    regexes that must match no wiki-interest command
+#   must_mention       regexes (case-insensitive) that must match the final answer
+#   report_lang        a report must be produced with this --lang
+# Manual checklist items (`manual`) are for a human reviewer.
+
+cases:
+  - id: ex1-fasting-pl-cs
+    turns:
+      - Compare growth of interest in intermittent fasting in Polish vs Czech Wikipedia over 2 years.
+    expect_commands: ["analyze .*--qid Q1666254|run "]
+    must_mention: ["(no|missing|not).{0,40}(pl|polish)", "share"]
+    manual:
+      - Says the Polish article is missing / not linked and offers the search suggestions.
+      - Does not invent a Polish trend.
+
+  - id: ex2-astronomy-uk-trust
+    turns:
+      - Is interest in astronomy growing in Ukrainian Wikipedia, and how much can we trust it?
+    expect_commands: ["--qid Q333|Q333"]
+    must_mention: ["declin|decreas|fall|спад", "strong|moderate|weak"]
+    manual:
+      - Explains the confidence using reasons (p-value/CI, volume) and warnings (edition decline, seasonality).
+      - Mentions share of edition traffic.
+
+  - id: ex3-learning-english-report
+    turns:
+      - >-
+        Compare interest in learning English across the Ukrainian, Polish, Czech, Romanian,
+        Turkish and Vietnamese Wikipedias over 3 years. Give me a one-page report on which
+        audiences to research next and why.
+    report_lang: en
+    manual:
+      - Does not silently use Q2731224 (VOA programme); asks or builds a topic set (e.g. TOEFL/IELTS/ESL).
+      - Report recommendation ranks audiences using growth AND share, with confidence.
+
+  - id: ambiguous-mercury
+    turns:
+      - Is interest in Mercury growing in Polish Wikipedia?
+    must_ask: true
+    must_mention: ["planet|element|god|which"]
+
+  - id: needs-confirmation-learning-english
+    turns:
+      - How is interest in learning English changing in Ukrainian Wikipedia?
+    must_ask: true
+    must_mention: ["Voice of America|VOA|programme|program|which|confirm"]
+
+  - id: missing-language-toefl
+    turns:
+      - Compare interest in TOEFL in Czech and Slovak Wikipedia over the last 2 years.
+    must_mention: ["(no|missing|not).{0,40}(cs|czech|sk|slovak)"]
+    manual:
+      - Reports exactly which languages lack an article and lists alternatives.
+
+  - id: tiny-wiki-rue
+    turns:
+      - Is astronomy getting more popular in the Rusyn Wikipedia (rue)?
+    must_mention: ["weak|insufficient", "volume|views"]
+    manual:
+      - Says the data cannot support a conclusion; no confident verdict.
+
+  - id: followup-add-language-longer-period
+    turns:
+      - Compare interest in astronomy in Polish and Czech Wikipedia over 2 years.
+      - Now add Slovak and use 3 years instead.
+    expect_commands: ["run .*--set|run .*\\.yaml"]
+    manual:
+      - Second turn reuses the saved spec (run <run_dir> --set ...) instead of starting over.
+      - Answer covers pl, cs and sk over 36 months.
+
+  - id: followup-raw-metric
+    turns:
+      - Is interest in physics growing in Czech Wikipedia?
+      - What does it look like in raw views instead of share?
+    expect_commands: ["metric[= ]raw"]
+    manual:
+      - Explains that raw views include edition-wide traffic changes.
+
+  - id: composite-topics-filter
+    turns:
+      - >-
+        For astronomy, physics and chemistry, compare interest in Ukrainian, Polish and
+        Czech Wikipedia over 3 years, ignore series under 10 views per day, and tell me
+        which topic-language pair is growing best.
+    expect_commands: ["run .*\\.yaml|compare "]
+    manual:
+      - Uses a spec with options.min_median_daily_views or explains the filter.
+      - Names the best pair with its confidence; says if nothing is growing.
+
+  - id: ukrainian-user
+    turns:
+      - Чи зростає інтерес до програмування в українській Вікіпедії за останні 3 роки?
+    must_mention: ["[а-яіїєґ]{4,}", "strong|moderate|weak|insufficient|висок|помірн|низьк"]
+    manual:
+      - Answers in Ukrainian; quotes the confidence label.
+
+  - id: polish-report
+    turns:
+      - Przygotuj jednostronicowy raport PDF po polsku o zainteresowaniu jogą w polskiej, czeskiej i słowackiej Wikipedii w ciągu ostatnich 2 lat.
+    report_lang: pl
+    manual:
+      - Report headings in Polish; summary numbers pass the guard.
+
+  - id: willingness-to-pay-trap
+    turns:
+      - Will people in Czechia pay for a meditation app? Use Wikipedia data to decide.
+    must_mention: ["not.{0,40}(pay|purchase|willing)|interest.{0,30}not"]
+    manual:
+      - Uses cs data as an interest signal only; recommends other validation for willingness to pay.
+
+  - id: explicit-dates
+    turns:
+      - Compare interest in ChatGPT in German vs French Wikipedia from 2023-01 to 2025-12.
+    expect_commands: ["--start 2023-01|start: *'?2023-01"]
+    manual:
+      - Uses explicit start/end; notes the article is recent if a warning appears.
