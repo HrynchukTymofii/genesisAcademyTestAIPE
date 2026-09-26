@@ -24,6 +24,12 @@ def scenarios(client):
     resolve_topic(client, "intermittent fasting", ["pl", "cs"])
     entity_info(client, ["Q1666254"], ["pl", "cs"])
 
+    from wiki_interest.series import build_topic_series, parse_period
+
+    build_topic_series(
+        client, "astronomy", "uk", "uk.wikipedia.org", ["Астрономія"], parse_period("24m")
+    )
+
 
 def main() -> None:
     assert os.environ.get("WIKI_INTEREST_TODAY"), "set WIKI_INTEREST_TODAY to the fixed test date"
