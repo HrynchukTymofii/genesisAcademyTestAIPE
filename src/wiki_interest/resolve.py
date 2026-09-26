@@ -25,6 +25,10 @@ PREFERRED_ORDER = [
 ]
 DOMINANCE_RATIO = 4.0  # exact-match candidate must have 4x the sitelinks of the next one
 MIN_DOMINANT_SITELINKS = 10
+# An exact label match with few editions is often a *work or programme* named like the
+# concept (e.g. "Learning English" = a VOA radio programme). Below this many
+# Wikipedia editions we ask for confirmation instead of resolving.
+MIN_AUTO_RESOLVE_EDITIONS = 25
 
 
 @dataclass
@@ -210,12 +214,22 @@ def resolve_topic(
         )
     ):
         why = (
-            "Only exact match."
+            "Only exact match"
             if not exact_others
             else f"Exact match with {top.sitelinks_total} Wikipedia editions vs "
-            f"{exact_others[0].sitelinks_total} for the next exact match."
+            f"{exact_others[0].sitelinks_total} for the next exact match"
         )
-        return _result("resolved", text, top, cands, why)
+        if top.sitelinks_total >= MIN_AUTO_RESOLVE_EDITIONS:
+            return _result("resolved", text, top, cands, why + ".")
+        return _result(
+            "needs_confirmation",
+            text,
+            top,
+            cands,
+            why + f", but only {top.sitelinks_total} editions: it may be a work, product or "
+            "programme named like the concept. Show the user label + description and ask "
+            "before analysing; if it is not what they mean, search a more specific name.",
+        )
     return _result(
         "ambiguous",
         text,
