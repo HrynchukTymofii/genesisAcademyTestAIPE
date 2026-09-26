@@ -164,5 +164,39 @@ def compare(
     _run(go)
 
 
+@app.command()
+def chart(
+    run_dir: str = typer.Argument(..., help="Run dir printed by analyze/compare/run."),
+    kind: str = typer.Option("indexed", "--kind", help="indexed (default), share or raw."),
+):
+    """Draw a chart for all series of a run; prints the PNG path."""
+
+    def go():
+        from .charts import make_chart
+
+        path = make_chart(run_dir, kind)
+        return {"ok": True, "command": "chart", "kind": kind, "chart": path}
+
+    _run(go)
+
+
+@app.command()
+def report(
+    run_dir: str = typer.Argument(..., help="Run dir printed by analyze/compare/run."),
+    summary: str = typer.Option(..., "--summary", help="2-4 sentences: answer, recommendation, caveat. Numbers must come from the run JSON."),
+    lang: str = typer.Option("en", "--lang", help="Report language: en, uk, pl, cs (headings)."),
+    out: str = typer.Option("report.pdf", "--out", help="Bare filename = inside the run dir."),
+    chart: str = typer.Option("indexed", "--chart", help="Main chart kind: indexed, share, raw."),
+):
+    """Build the one-page PDF report."""
+
+    def go():
+        from .report import build_report
+
+        return build_report(run_dir, summary, lang=lang, out=out, chart=chart)
+
+    _run(go)
+
+
 if __name__ == "__main__":
     app()

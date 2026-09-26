@@ -233,7 +233,7 @@ def run_analysis(
     topics = [_resolve_topic(client, t, spec.languages, i) for i, t in enumerate(spec.topics)]
 
     records, details, missing = [], [], []
-    series_by_key = {}
+    series_list = []  # aligned with records
     for topic in topics:
         missing += topic["missing"]
         for lang in spec.languages:
@@ -257,7 +257,7 @@ def run_analysis(
             )
             records.append(_record(topic, lang, ts, st, spec.metric, spec.options.base_months))
             details.append({"topic": topic["label"], "lang": lang, "stats": st})
-            series_by_key[(topic["slug"], lang)] = ts
+            series_list.append((topic["slug"], lang, ts))
 
     if not records:
         raise WikiInterestError(
@@ -268,11 +268,15 @@ def run_analysis(
     label_hint = "-".join([topics[0]["slug"], *spec.languages])
     run_dir = new_run_dir(spec, label_hint)
     series_files = []
-    for (slug, lang), ts in series_by_key.items():
-        m = run_dir / "series" / f"{slug}_{lang}_monthly.csv"
+    for i, (slug, lang, ts) in enumerate(series_list):
+        stem = f"{slug}_{lang}"
+        if any(f"{stem}_monthly" in f for f in series_files):  # two topics with one label
+            stem = f"{slug}-{i + 1}_{lang}"
+        m = run_dir / "series" / f"{stem}_monthly.csv"
         ts.monthly_frame().to_csv(m, date_format="%Y-%m")
-        ts.daily_frame().to_csv(run_dir / "series" / f"{slug}_{lang}_daily.csv")
+        ts.daily_frame().to_csv(run_dir / "series" / f"{stem}_daily.csv")
         series_files.append(m.as_posix())
+        details[i]["series_file"] = f"series/{stem}_monthly.csv"
 
     resolved = spec.model_copy(deep=True)
     resolved.topics = [t["spec"] for t in topics]
