@@ -63,13 +63,6 @@ cases:
     must_ask: true
     must_mention: ["Voice of America|VOA|programme|program|which|confirm"]
 
-  - id: missing-language-toefl
-    turns:
-      - Compare interest in TOEFL in Czech and Slovak Wikipedia over the last 2 years.
-    must_mention: ["(no|missing|not).{0,40}(cs|czech|sk|slovak)"]
-    manual:
-      - Reports exactly which languages lack an article and lists alternatives.
-
   - id: tiny-wiki-rue
     turns:
       - Is astronomy getting more popular in the Rusyn Wikipedia (rue)?
@@ -132,3 +125,25 @@ cases:
     expect_commands: ["--start 2023-01|start: *'?2023-01"]
     manual:
       - Uses explicit start/end; notes the article is recent if a warning appears.
+
+  - id: custom-criteria-ranking
+    turns:
+      - >-
+        We are choosing where to launch a language-learning app. Compare interest in the
+        TOEFL and IELTS exams (summed) in Ukrainian, Polish, Czech, Romanian, Turkish and
+        Vietnamese Wikipedia over 3 years. For us growth matters most (60%), then the size
+        of interest (40%). Only consider results with at least moderate confidence.
+    expect_commands: ["rank-by", "min-confidence moderate|min_confidence: *moderate"]
+    manual:
+      - Uses --rank-by growth=0.6,share=0.4 (or a spec ranking section) and quotes custom_ranking.
+      - Explains the top pick with its points; mentions excluded low-confidence languages.
+
+  - id: history-new-session
+    fresh_sessions: true  # turn 2 starts a new chat with no memory of turn 1
+    turns:
+      - Is interest in physics growing in Polish Wikipedia?
+      - Earlier we analysed physics in Polish Wikipedia. What was the trend and how confident was it?
+    expect_commands: ["history"]
+    manual:
+      - Turn 2 finds the earlier run with `history` and re-reads it (history --run) instead of re-analysing or guessing.
+

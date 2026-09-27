@@ -96,6 +96,8 @@ def main() -> int:
         for i, turn in enumerate(case["turns"], start=1):
             out = workdir / "transcripts" / f"{case['id']}.turn{i}.jsonl"
             print(f"[{case['id']}] turn {i}...", flush=True)
+            if case.get("fresh_sessions"):  # simulate a new chat: no memory of earlier turns
+                session = None
             session = run_turn(args.claude, args.model, turn, workdir, out, session, env)
 
     from grade import main as grade_main
