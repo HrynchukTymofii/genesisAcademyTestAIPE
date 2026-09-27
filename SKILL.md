@@ -106,7 +106,11 @@ Cached data makes reruns fast.
   `overall_ranked_by_trend`). For "compared with the whole Wikipedia" quote
   `relative_to_edition`.
 - Use command output as printed; do not reformat it (no `ConvertTo-Json`, `jq`).
-- Say that pageviews signal interest, not willingness to pay.
+- Say that pageviews signal interest, not willingness to pay, and that part of the
+  audience moved from Wikipedia to AI assistants unevenly by topic, so a falling share
+  can mean fewer Wikipedia lookups rather than less interest.
+- End every answer with **Sources**: the `sources.pageviews` link (and the Wikipedia
+  article) of each series you quote, so the user can check the numbers.
 - Quote relevant `warnings` as caveats (spikes, low volume, seasonality, edition decline).
 - `insufficient_data` or `weak` → say the data cannot support a conclusion.
 - Never silently choose an ambiguous entity; never invent a Wikipedia article title.
@@ -123,6 +127,7 @@ Cached data makes reruns fast.
 > **Caveats:** <relevant `warnings`>; trends use share of edition traffic;
 > pageviews = interest, not willingness to pay.
 > **Next:** offer chart / report / follow-up (more languages, longer period).
+> **Sources:** <topic> [<lang>]: <sources.pageviews> · <sources.wikipedia>
 
 ## 8. References (read only when needed)
 

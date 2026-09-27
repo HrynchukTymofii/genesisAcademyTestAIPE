@@ -33,6 +33,12 @@ sum. Scores are **relative**: 100 = best of this set, 0 = worst of this set. Quo
 `score` and the `points` that drive it ("ranked first because it has the highest share
 and strongest confidence"). Series below `min_confidence` are listed in `excluded`.
 
+`sources` (per series) lists where every number can be checked: the Wikipedia article(s),
+the Wikidata entity, a `pageviews` link (same articles incl. redirects, same dates: the
+raw views), an `edition_total` link (the whole edition: the denominator of share), and
+`data_file` (the exact monthly numbers used). Cite `pageviews` and the article at the
+end of every answer.
+
 ## Confidence labels
 
 - **strong** — consistent trend, adequate volume, robust to spikes. State it plainly.
@@ -56,6 +62,12 @@ and strongest confidence"). Series below `min_confidence` are listed in `exclude
   article being discovered.
 
 ## Phrasing for founders
+
+- Part of Wikipedia's audience moved to AI assistants and search answers, and not evenly:
+  factual and school-type lookups moved more than news or entertainment. Share corrects
+  the edition-wide drop, not these topic differences. So say "losing share of Wikipedia
+  attention", not "people lost interest", and prefer comparing options (topic A vs B,
+  language X vs Y), which both face the same shift.
 
 - Pageviews show curiosity and information need, **not** willingness to pay.
 - A growing share in a small edition can still be a small audience: mention
