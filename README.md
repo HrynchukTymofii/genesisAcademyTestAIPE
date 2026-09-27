@@ -108,7 +108,7 @@ Key decisions:
 
 ## How it was tested
 
-**Unit and integration tests** — `uv run pytest` (72 tests, no network; also run by GitHub Actions on Ubuntu and Windows):
+**Unit and integration tests** — `uv run pytest` (78 tests, no network; also run by GitHub Actions on Ubuntu and Windows):
 - Statistics on synthetic series of known shape: flat, linear growth, flat + single
   spike, spikes that fake growth, seasonal, edition growth (raw up / share flat), low
   volume, short series, article created mid-period; exact Theil–Sen on a line with a
