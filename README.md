@@ -150,9 +150,11 @@ The runner installs the skill into a temp workdir (outside the repo), runs each 
 JSON, confidence label present, report PDF is one page, plus per-case expectations.
 `grades.json` lists the manual checklist items.
 
-A smoke run with Haiku 4.5 on 2 cases passed. It also found two issues that are now
-fixed: `uv` not on PATH (→ `python -m uv` fallback), and the model `cd`-ing into the
-skill directory (→ explicit rule in SKILL.md).
+Final clean run with Haiku 4.5 (2026-09-27): 12/14 automatic, 13/14 correct after
+reading transcripts (one grader false alarm). The remaining failure: the model invented a
+user confirmation, which the audit flags. Seven eval runs led to code guardrails
+(confirmation enforcement, tool-computed rankings and comparisons, `--min-daily-views`);
+see `docs/GUIDE.md` §6.9 and Appendix A.
 
 ## Limitations
 

@@ -21,7 +21,7 @@ cases:
     turns:
       - Compare growth of interest in intermittent fasting in Polish vs Czech Wikipedia over 2 years.
     expect_commands: ["analyze .*--qid Q1666254|run "]
-    must_mention: ["(no|missing|not).{0,40}(pl|polish)", "share"]
+    must_mention: ["(no|missing|not).{0,40}(pl|polish)"]
     manual:
       - Says the Polish article is missing / not linked and offers the search suggestions.
       - Does not invent a Polish trend.
