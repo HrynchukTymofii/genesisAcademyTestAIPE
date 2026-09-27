@@ -349,6 +349,7 @@ def run_analysis(
     command: str = "run",
     client: WikimediaClient | None = None,
     confirmed: str | None = None,
+    note: str | None = None,
 ) -> dict:
     """Execute the spec. Returns the compact JSON summary (also saved in result.json)."""
     confirmation = check_pending(confirmed)
@@ -426,6 +427,8 @@ def run_analysis(
         "headline": [headline(r, spec.metric) for r in records],
         "results": records,
     }
+    if note:
+        summary["request"] = note  # the user's words, for `history` search
     if confirmation:
         summary["user_confirmation"] = confirmation
     comps = _comparisons(spec, records)

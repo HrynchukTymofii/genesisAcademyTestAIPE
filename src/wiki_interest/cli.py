@@ -114,6 +114,7 @@ def analyze(
     charts: str = typer.Option("", "--charts", help="Also draw charts: indexed,share,raw."),
     min_daily_views: float = typer.Option(0, "--min-daily-views", help="Exclude series with a lower median views/day from rankings."),
     confirmed: Optional[str] = typer.Option(None, "--confirmed", help="The user's own answer, quoted, after an ambiguous resolve (saved in the results)."),
+    note: Optional[str] = typer.Option(None, "--note", help="The user's request in their words; makes the run findable with `history`."),
     rank_by: Optional[str] = typer.Option(None, "--rank-by", help="User's criteria as weights: growth=0.5,share=0.3,volume=0.1,certainty=0.1"),
     min_confidence: str = typer.Option("weak", "--min-confidence", help="Only rank series with at least this confidence: weak|moderate|strong."),
 ):
@@ -145,7 +146,7 @@ def analyze(
                 "output": {"charts": _charts(charts)},
             }
         )
-        return run_analysis(spec, command="analyze", confirmed=confirmed)
+        return run_analysis(spec, command="analyze", confirmed=confirmed, note=note)
 
     _run(go)
 
@@ -161,6 +162,7 @@ def compare(
     charts: str = typer.Option("", "--charts", help="Also draw charts: indexed,share,raw."),
     min_daily_views: float = typer.Option(0, "--min-daily-views", help="Exclude series with a lower median views/day from rankings."),
     confirmed: Optional[str] = typer.Option(None, "--confirmed", help="The user's own answer, quoted, after an ambiguous resolve (saved in the results)."),
+    note: Optional[str] = typer.Option(None, "--note", help="The user's request in their words; makes the run findable with `history`."),
     rank_by: Optional[str] = typer.Option(None, "--rank-by", help="User's criteria as weights: growth=0.5,share=0.3,volume=0.1,certainty=0.1"),
     min_confidence: str = typer.Option("weak", "--min-confidence", help="Only rank series with at least this confidence: weak|moderate|strong."),
 ):
@@ -177,7 +179,7 @@ def compare(
                 "output": {"charts": _charts(charts)},
             }
         )
-        return run_analysis(spec, command="compare", confirmed=confirmed)
+        return run_analysis(spec, command="compare", confirmed=confirmed, note=note)
 
     _run(go)
 
@@ -188,6 +190,7 @@ def run(
     set_: list[str] = typer.Option([], "--set", help="Override: key=value, e.g. period=36m, languages=pl,cs,sk."),
     save_as: Optional[str] = typer.Option(None, "--save-as", help="Also write the edited spec to this path."),
     confirmed: Optional[str] = typer.Option(None, "--confirmed", help="The user's own answer, quoted, after an ambiguous resolve (saved in the results)."),
+    note: Optional[str] = typer.Option(None, "--note", help="The user's request in their words; makes the run findable with `history`."),
 ):
     """Run a YAML analysis spec (composite requests, follow-ups)."""
 
@@ -200,7 +203,23 @@ def run(
             from pathlib import Path
 
             dump_spec(spec, Path(save_as))
-        return run_analysis(spec, command="run", confirmed=confirmed)
+        return run_analysis(spec, command="run", confirmed=confirmed, note=note)
+
+    _run(go)
+
+
+@app.command()
+def history(
+    query: str = typer.Argument("", help="Keywords: topic, language (code or name), QID, words of the request."),
+    run_dir: Optional[str] = typer.Option(None, "--run", help="Re-print the compact results of one earlier run."),
+    limit: int = typer.Option(8, "--limit"),
+):
+    """Find earlier analyses (also after the chat context was compacted or in a new session)."""
+
+    def go():
+        from .history import search, show
+
+        return show(run_dir) if run_dir else search(query, limit)
 
     _run(go)
 

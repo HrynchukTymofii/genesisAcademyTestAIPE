@@ -68,7 +68,14 @@ User gives dates ("from 2023-01 to 2025-12") → `--start 2023-01 --end 2025-12`
 Use `36m` or more when the user asks about trust or seasonality.
 Use `--metric raw` only if the user explicitly asks for raw views.
 
-## 4. Follow-ups ("add Slovak", "use 3 years", "only since 2023")
+## 4. Earlier analyses and follow-ups
+
+- Always pass `--note "<user's request, short, their words>"` to analyze/compare/run.
+- The user refers to an earlier analysis you cannot see in this conversation
+  ("what did we find about astronomy last time?") → `WI history "<keywords>"`, then
+  `WI history --run <run_dir>` and answer from those numbers. Never answer from memory.
+
+Follow-ups ("add Slovak", "use 3 years", "only since 2023"):
 
 Do NOT start over. Reuse the previous run's spec:
 `WI run <previous_run_dir> --set languages=pl,cs,sk --set period=36m`
