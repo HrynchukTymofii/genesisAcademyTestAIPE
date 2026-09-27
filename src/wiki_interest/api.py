@@ -21,7 +21,7 @@ REST_BASE = "https://wikimedia.org/api/rest_v1"
 WIKIDATA_API = "https://www.wikidata.org/w/api.php"
 PAGEVIEWS_START = date(2015, 7, 1)  # first day with pageview data
 
-DEFAULT_CONTACT = "https://github.com/HrynchukTymofii/wiki-interest"
+DEFAULT_CONTACT = "https://github.com/HrynchukTymofii/genesisAcademyTestAIPE"
 SHORT_TTL = 6 * 3600  # current period: refresh a few times a day
 META_TTL = 7 * 24 * 3600  # Wikidata search / sitelinks / redirects
 
