@@ -1,6 +1,6 @@
 ---
 name: wiki-interest
-description: Analyze Wikipedia pageview trends to measure public interest in topics and compare language editions (markets). Use when the user asks whether interest in a topic is growing or declining, wants to compare interest across languages/countries or across topics, asks how trustworthy a trend is, wants charts or a one-page PDF report on topic interest, or mentions Wikipedia pageviews, Wikimedia data, market or language selection for a B2C product.
+description: Analyze Wikipedia pageview trends to measure public interest in topics and compare language editions (markets). Use when the user asks whether interest in a topic is growing or declining, wants to compare interest across languages/countries or across topics, asks how trustworthy a trend is, wants charts or a one-page PDF report on topic interest, or mentions Wikipedia pageviews, Wikimedia data, market or language selection for a B2C product. Also use it when the user asks about an earlier or previous Wikipedia interest analysis (results are saved and can be looked up).
 ---
 
 # wiki-interest
@@ -49,7 +49,8 @@ results go to `./wiki-interest-runs/<id>/` under the directory you run from.
 ## 3. Decision tree
 
 - One topic, one or more languages → `WI analyze --qid Q.. --langs a,b --period 24m`
-  - Topic = several entities summed → repeat `--qid` (`--qid Q1 --qid Q2`).
+  - Topic = several entities summed ("X and Y summed / combined / together") → ONE
+    topic: `analyze --qid Q1 --qid Q2` (not `compare`, which keeps them separate).
 - Several topics side by side → `WI compare --qids Q1,Q2 --langs a,b --period 24m`
 - Both commands accept: `--start YYYY-MM --end YYYY-MM` (explicit dates, replace
   `--period`), `--min-daily-views N` ("ignore series under N views/day"),

@@ -58,15 +58,49 @@ Increase trust by agreement:
 - Output as `forecast_12m_pct` with interval and a confidence label computed like the
   trend label.
 
-## 7. Ranking languages/topics by user-defined criteria
+## 7. Richer user-defined criteria (the basic version is built)
 
-Founders weigh growth, size and certainty differently.
-- Spec field `ranking: {weights: {growth: 0.5, share: 0.3, volume: 0.2},
-  min_confidence: moderate, exclude: [...]}`, computed deterministically in the engine.
-- Report shows the ranking table with each component, so the model explains the
-  ranking instead of inventing one.
+`--rank-by growth=..,share=..,volume=..,certainty=..` with `--min-confidence` already
+ranks series by the user's own weights, explained per criterion. Next:
+- More criteria: seasonality (prefer stable demand), recent momentum (last 6 months vs
+  the trend), per-capita size (item 4), cross-source agreement (item 5).
+- Hard constraints next to weights ("only editions with ≥ 50 views/day", "exclude en").
+- Sensitivity check: report whether the top pick changes when weights move ±10 points,
+  so the user sees how robust the recommendation is.
 
-## 8. Growing the eval set from real failures
+## 8. Derived comparisons ("contrasts")
+
+Questions like "is the Ukraine–USA gap bigger than the Germany–Czech gap?" need numbers
+that no single series has. Today the model would have to subtract trends itself, which
+SKILL.md forbids and the report guard rejects. Plan:
+- Spec field `contrasts: [{name, a: uk, b: en}, {name, a: de, b: cs}]` and
+  `compare_contrasts: true`.
+- Per contrast: gap in growth (points/yr) with a bootstrap CI computed from the paired
+  series, and the share ratio. Across contrasts: difference of the gaps with its own CI
+  and a confidence label using the same rules as trends.
+- Chart of the gaps; numbers in the JSON so the model can quote them.
+
+## 9. A sandboxed "custom analysis" tool
+
+Some requests will always fall outside fixed commands (a new chart type, an unusual
+metric). The model should then write a short script, and the system should run it
+safely:
+- **Narrow interface:** the script receives the run's series as DataFrames plus helper
+  functions (trend, index, chart style) and returns declared outputs only: files
+  (PNG/CSV) and a small dict of named numbers. Those numbers are saved in `result.json`
+  as `custom` results, so the report guard accepts them and reviewers see their origin.
+- **Isolation is the security boundary:** run in a container or micro-VM with no network,
+  a read-only filesystem except a scratch dir, a non-root user, and CPU/memory/time
+  limits (Docker `--network none --read-only`, gVisor/Firecracker, or a hosted sandbox).
+  WebAssembly Python (Pyodide) is another option with no host access at all.
+- **Defence in depth, not the boundary:** static checks (block `subprocess`, `socket`,
+  file access outside scratch) for fast feedback to the model; a clean environment with
+  no secrets; size limits on outputs; outputs treated as data, never as instructions
+  (prompt-injection risk); the code logged next to the run for audit.
+- Evals: prompts that need custom code, plus adversarial prompts that try to read files
+  or reach the network, which must fail safely.
+
+## 10. Growing the eval set from real failures
 
 - Every real conversation where the agent failed (wrong entity, invented number,
   missing caveat, started over instead of editing the spec) becomes a case in
