@@ -12,7 +12,6 @@ run's results, so the model cannot invent statistics.
 from __future__ import annotations
 
 import re
-from datetime import date
 from io import BytesIO
 from pathlib import Path
 
@@ -35,6 +34,7 @@ from reportlab.platypus import (
 from xml.sax.saxutils import escape
 
 from . import __version__
+from .api import today
 from .engine import load_run
 from .errors import SummaryGuardError, WikiInterestError
 
@@ -54,7 +54,7 @@ T = {
         "table": "Metrics per series",
         "rec": "Recommendation",
         "limits": "Assumptions and limitations",
-        "cols": ["Topic", "Lang", "Verdict", "Trend %/yr (95% CI)", "YoY %", "Views/day", "Share /M", "Confidence"],
+        "cols": ["Topic", "Lang", "Verdict", "Trend %/yr (95% CI)", "YoY %", "Views /day", "Share /M", "Confidence"],
         "verdict": {"growing": "growing", "declining": "declining", "stable": "stable", "unclear": "unclear", "unknown": "unknown"},
         "conf": {"strong": "strong", "moderate": "moderate", "weak": "weak", "insufficient_data": "insufficient data"},
         "hl": "{who}: {verdict} {pct}%/yr (95% CI {lo}..{hi}); confidence: {conf}",
@@ -323,7 +323,7 @@ def _story(result, summary, tr, chart_path, layout, fonts):
                 Paragraph(escape(tr["conf"].get(r["confidence"], r["confidence"])), st["cell"]),
             ]
         )
-    widths = [x * mm for x in (32, 14, 20, 36, 16, 18, 18, 26)]
+    widths = [x * mm for x in (30, 14, 19, 36, 15, 20, 17, 29)]
     table = Table(data, colWidths=widths, repeatRows=1)
     table.setStyle(
         TableStyle(
@@ -358,7 +358,7 @@ def _story(result, summary, tr, chart_path, layout, fonts):
         Spacer(1, 5),
         Paragraph(
             escape(
-                tr["period"].format(start=p["start"], end=p["end"], months=p["months"], today=date.today().isoformat())
+                tr["period"].format(start=p["start"], end=p["end"], months=p["months"], today=today().isoformat())
                 + f" Source: Wikimedia Pageviews API, agent=user. wiki-interest {__version__}."
             ),
             st["sub"],

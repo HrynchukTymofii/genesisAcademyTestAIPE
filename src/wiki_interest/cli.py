@@ -193,10 +193,17 @@ def chart(
     """Draw a chart for all series of a run; prints the PNG path."""
 
     def go():
-        from .charts import make_chart
+        from .charts import MAX_SERIES, make_chart, omitted_series
 
         path = make_chart(run_dir, kind)
-        return {"ok": True, "command": "chart", "kind": kind, "chart": path}
+        out = {"ok": True, "command": "chart", "kind": kind, "chart": path}
+        n = omitted_series(run_dir)
+        if n:
+            out["warnings"] = [
+                f"chart shows the first {MAX_SERIES} series; {n} more are not drawn. "
+                "Split the request (fewer topics or languages per run) for readable charts."
+            ]
+        return out
 
     _run(go)
 

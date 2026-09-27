@@ -75,3 +75,12 @@ def test_guard_accepts_real_numbers_in_local_formats(run_dir):
     )
     assert check_summary_numbers(result, text) == []
     assert check_summary_numbers(result, "It will grow 12345%.") == ["12345"]
+
+
+def test_chart_warns_when_series_are_omitted(run_dir, monkeypatch):
+    import wiki_interest.charts as charts
+
+    monkeypatch.setattr(charts, "MAX_SERIES", 1)
+    code, out = cli(["chart", run_dir, "--kind", "indexed"])
+    assert code == 0
+    assert "1 more are not drawn" in out["warnings"][0]

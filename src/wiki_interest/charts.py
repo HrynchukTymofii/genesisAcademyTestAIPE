@@ -12,7 +12,6 @@ lines are direct-labeled in neutral ink when there are <= 4 series.
 
 from __future__ import annotations
 
-from datetime import date
 from pathlib import Path
 
 import matplotlib
@@ -22,6 +21,7 @@ import matplotlib.dates as mdates  # noqa: E402
 import matplotlib.pyplot as plt  # noqa: E402
 import pandas as pd  # noqa: E402
 
+from .api import today  # noqa: E402
 from .engine import load_run  # noqa: E402
 from .errors import WikiInterestError  # noqa: E402
 from .series import auto_base_months, indexed  # noqa: E402
@@ -68,6 +68,11 @@ def _spread_labels(ys: list[float], min_gap: float) -> list[float]:
     return placed
 
 
+def omitted_series(run_dir: str | Path) -> int:
+    """How many series a chart of this run leaves out (0 if all fit)."""
+    return max(0, len(load_run(run_dir)["results"]) - MAX_SERIES)
+
+
 def make_chart(
     run_dir: str | Path,
     kind: str = "indexed",
@@ -82,7 +87,8 @@ def make_chart(
     run_dir = Path(run_dir)
     result = load_run(run_dir)
     frames = _series_frames(run_dir, result)
-    if len(frames) > MAX_SERIES:
+    omitted = max(0, len(frames) - MAX_SERIES)
+    if omitted:  # more lines are unreadable; say so on the chart and in the CLI JSON
         frames = frames[:MAX_SERIES]
     metric = result.get("metric", "share")
 
@@ -171,7 +177,8 @@ def make_chart(
     p = result["period"]
     fig.text(
         0.01, 0.01,
-        f"{SOURCE} · {p['start']} to {p['end']} · generated {date.today():%Y-%m-%d}",
+        f"{SOURCE} · {p['start']} to {p['end']} · generated {today():%Y-%m-%d}"
+        + (f" · {omitted} more series not shown (see series/*.csv)" if omitted else ""),
         fontsize=6.5, color=INK_MUTED,
     )
     fig.tight_layout(rect=(0, 0.03, 0.97, 1))
