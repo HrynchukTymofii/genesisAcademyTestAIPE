@@ -108,3 +108,21 @@ def test_min_daily_views_excludes_small_series_from_rankings(recorded):
     assert len(out["comparisons"]["excluded_from_rankings"]) == 2
     code, out = invoke(CLI_SCENARIOS["compare_uk"] + ["--min-daily-views", "1"])
     assert len(out["comparisons"]["topics"][0]["ranked_by_trend"]) == 2
+
+
+def test_overall_ranking_and_relative_to_edition(recorded):
+    code, out = invoke("compare_uk_pl")
+    assert code == 0
+    overall = out["comparisons"]["overall_ranked_by_trend"]
+    assert len(overall) == 4
+    trends = [x["trend_pct_per_year"] for x in overall]
+    assert trends == sorted(trends, reverse=True)  # the model never sorts itself
+    for r in out["results"]:
+        assert r["relative_to_edition"].endswith(f"{r['lang']} Wikipedia overall")
+        if r["verdict"] == "declining":
+            assert r["relative_to_edition"].startswith("losing ground")
+
+
+def test_single_language_has_no_overall_ranking(recorded):
+    _, out = invoke("compare_uk")
+    assert "overall_ranked_by_trend" not in out["comparisons"]

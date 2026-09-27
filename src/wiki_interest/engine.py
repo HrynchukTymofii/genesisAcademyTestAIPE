@@ -151,6 +151,7 @@ def _record(topic: dict, lang: str, ts, st: dict, metric: str, base_months: int 
         "share_per_million_last12": _r(st["last12_share_per_million"], 2),
         "index_recent": _r(idx.iloc[-base:].mean()),
         "index_basis": f"mean of last {base} months; first {base} months = 100",
+        "relative_to_edition": _relative_to_edition(st, lang),
         "spike_days": st["spikes"]["spike_days"],
         "seasonality_strength": _r(st["seasonality_strength"], 2),
         "months": st["months"],
@@ -170,6 +171,18 @@ def headline(rec: dict, metric: str) -> str:
         f"{who}: {rec['verdict']} {rec['trend_pct_per_year']:+.1f}%/yr in {basis} "
         f"(95% CI {lo:+.1f}..{hi:+.1f}), confidence {rec['confidence']}"
     )
+
+
+def _relative_to_edition(st: dict, lang: str) -> str:
+    """The share verdict in words, so the model never needs to divide trends itself."""
+    edition = f"{lang} Wikipedia overall"
+    if st["metric"] != "share":
+        return "see share trend (metric=raw)"
+    return {
+        "declining": f"losing ground: falls faster than {edition}",
+        "growing": f"gaining ground: grows faster than {edition}",
+        "stable": f"keeping pace with {edition}",
+    }.get(st["verdict"], f"no clear difference from {edition}")
 
 
 def _comparisons(spec: AnalysisSpec, records: list[dict]) -> dict:
@@ -217,6 +230,13 @@ def _comparisons(spec: AnalysisSpec, records: list[dict]) -> dict:
                     )["topic"],
                 }
             )
+    topics_n = len({r["topic"] for r in records})
+    langs_n = len({r["lang"] for r in records})
+    if topics_n > 1 and langs_n > 1 and len(usable) > 1:  # "which pair is best?"
+        out["overall_ranked_by_trend"] = [
+            {"topic": r["topic"], "lang": r["lang"], **{k: r[k] for k in keys}}
+            for r in sorted(usable, key=lambda r: -(r["trend_pct_per_year"] or -1e9))
+        ]
     out = {k: v for k, v in out.items() if v}  # drop empty rankings
     excluded = [f"{r['topic']} [{r['lang']}]" for r in records if r not in usable]
     if excluded and spec.effective_comparisons():

@@ -1,0 +1,1 @@
+{"url": "https://pl.wikipedia.org/w/api.php?action=query&format=json&formatversion=2&prop=redirects&rdlimit=50&rdnamespace=0&redirects=1&titles=Fizyka", "status": 200, "body": "{\"batchcomplete\":true,\"query\":{\"pages\":[{\"pageid\":1532,\"ns\":0,\"title\":\"Fizyka\"}]}}"}

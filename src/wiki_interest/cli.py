@@ -30,7 +30,8 @@ def emit(obj: dict) -> None:
         sys.stdout.reconfigure(encoding="utf-8")  # Cyrillic etc. on Windows consoles
     except AttributeError:
         pass
-    print(json.dumps(obj, ensure_ascii=False, indent=1))
+    # compact: large multi-series outputs must stay small enough for the agent's context
+    print(json.dumps(obj, ensure_ascii=False, separators=(", ", ": ")))
 
 
 def _run(fn, *args, **kwargs) -> None:
