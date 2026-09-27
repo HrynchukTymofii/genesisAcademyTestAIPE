@@ -12,6 +12,7 @@ lines are direct-labeled in neutral ink when there are <= 4 series.
 
 from __future__ import annotations
 
+import textwrap
 from pathlib import Path
 
 import matplotlib
@@ -161,7 +162,9 @@ def make_chart(
     basis = ""
     if kind == "indexed":
         basis = " (share of edition views)" if metric == "share" else " (raw views)"
-    title = f"{KINDS[kind]}{basis}: {topic_txt} ({lang_txt} Wikipedia)"
+    title = "\n".join(
+        textwrap.wrap(f"{KINDS[kind]}{basis}: {topic_txt} ({lang_txt} Wikipedia)", 78)
+    )  # long topic names must not be cut off at the figure edge
     if len(ends) > 1:  # legend in its own row above the plot, never over the data
         handles, labels = ax.get_legend_handles_labels()
         order = sorted(range(len(labels)), key=lambda i: (
