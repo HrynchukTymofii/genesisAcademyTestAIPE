@@ -76,8 +76,10 @@ def resolve(
     _run(go)
 
 
-def _period_fields(period, start, end, metric) -> dict:
+def _period_fields(period, start, end, metric, min_views=0.0) -> dict:
     d = {"period": period, "metric": metric}
+    if min_views:
+        d["options"] = {"min_median_daily_views": min_views}
     if start:
         d["start"] = start
     if end:
@@ -101,6 +103,7 @@ def analyze(
     end: Optional[str] = typer.Option(None, "--end", help="YYYY-MM (default: last complete month)."),
     metric: str = typer.Option("share", "--metric", help="share (default, for verdicts) or raw."),
     charts: str = typer.Option("", "--charts", help="Also draw charts: indexed,share,raw."),
+    min_daily_views: float = typer.Option(0, "--min-daily-views", help="Exclude series with a lower median views/day from rankings."),
 ):
     """One topic (one or more entities/articles summed) across one or more languages."""
 
@@ -126,7 +129,7 @@ def analyze(
             {
                 "topics": [t],
                 "languages": _split(langs),
-                **_period_fields(period, start, end, metric),
+                **_period_fields(period, start, end, metric, min_daily_views),
                 "output": {"charts": _charts(charts)},
             }
         )
@@ -144,6 +147,7 @@ def compare(
     end: Optional[str] = typer.Option(None, "--end"),
     metric: str = typer.Option("share", "--metric"),
     charts: str = typer.Option("", "--charts", help="Also draw charts: indexed,share,raw."),
+    min_daily_views: float = typer.Option(0, "--min-daily-views", help="Exclude series with a lower median views/day from rankings."),
 ):
     """Several topics side by side in one or more languages."""
 
@@ -154,7 +158,7 @@ def compare(
             {
                 "topics": [{"qid": q} for q in _split(qids)],
                 "languages": _split(langs),
-                **_period_fields(period, start, end, metric),
+                **_period_fields(period, start, end, metric, min_daily_views),
                 "output": {"charts": _charts(charts)},
             }
         )

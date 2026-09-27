@@ -99,3 +99,12 @@ def test_invalid_language_names_field(env):
 def test_bad_period(env):
     code, out = invoke(["analyze", "--qid", "Q333", "--langs", "uk", "--period", "forever"])
     assert code == 1 and "period" in out["message"]
+
+
+def test_min_daily_views_excludes_small_series_from_rankings(recorded):
+    code, out = invoke(CLI_SCENARIOS["compare_uk"] + ["--min-daily-views", "100000"])
+    assert code == 0
+    assert "topics" not in out["comparisons"]  # nothing big enough to rank
+    assert len(out["comparisons"]["excluded_from_rankings"]) == 2
+    code, out = invoke(CLI_SCENARIOS["compare_uk"] + ["--min-daily-views", "1"])
+    assert len(out["comparisons"]["topics"][0]["ranked_by_trend"]) == 2

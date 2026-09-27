@@ -217,6 +217,12 @@ def _comparisons(spec: AnalysisSpec, records: list[dict]) -> dict:
                     )["topic"],
                 }
             )
+    out = {k: v for k, v in out.items() if v}  # drop empty rankings
+    excluded = [f"{r['topic']} [{r['lang']}]" for r in records if r not in usable]
+    if excluded and spec.effective_comparisons():
+        out["excluded_from_rankings"] = excluded
+        if min_vol:
+            out["filter"] = f"series with median < {min_vol:g} views/day or insufficient_data are not ranked"
     if out:
         out["note"] = (
             "Rankings use growth of share of edition views (%/yr) and share level; raw counts "
