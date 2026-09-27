@@ -25,6 +25,14 @@
 `highest_share_of_edition` = the language where the topic takes the largest share of
 attention. Growth and size are different questions: say which one you rank by.
 
+`comparisons.custom_ranking` (when `--rank-by` was given) ranks series by the user's
+own weighted criteria: `growth` (share trend), `share` (size of interest), `volume`
+(median daily views), `certainty` (confidence label). Each criterion is scaled 0–100
+among the compared series (share and volume on a log scale), and `score` is the weighted
+sum. Scores are **relative**: 100 = best of this set, 0 = worst of this set. Quote `rank`,
+`score` and the `points` that drive it ("ranked first because it has the highest share
+and strongest confidence"). Series below `min_confidence` are listed in `excluded`.
+
 ## Confidence labels
 
 - **strong** — consistent trend, adequate volume, robust to spikes. State it plainly.

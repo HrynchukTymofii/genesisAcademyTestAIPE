@@ -126,3 +126,14 @@ def test_overall_ranking_and_relative_to_edition(recorded):
 def test_single_language_has_no_overall_ranking(recorded):
     _, out = invoke("compare_uk")
     assert "overall_ranked_by_trend" not in out["comparisons"]
+
+
+def test_rank_by_cli(recorded):
+    code, out = invoke(CLI_SCENARIOS["compare_uk_pl"] + ["--rank-by", "growth=0.7,share=0.3"])
+    assert code == 0
+    cr = out["comparisons"]["custom_ranking"]
+    assert len(cr["ranked"]) == 4 and cr["ranked"][0]["rank"] == 1
+    scores = [r["score"] for r in cr["ranked"]]
+    assert scores == sorted(scores, reverse=True)
+    code, out = invoke(CLI_SCENARIOS["compare_uk_pl"] + ["--rank-by", "price=1"])
+    assert code == 1 and out["error"] == "spec_error"

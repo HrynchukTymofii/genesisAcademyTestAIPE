@@ -311,6 +311,12 @@ def _comparisons(spec: AnalysisSpec, records: list[dict]) -> dict:
             {"topic": r["topic"], "lang": r["lang"], **{k: r[k] for k in keys}}
             for r in sorted(usable, key=lambda r: -(r["trend_pct_per_year"] or -1e9))
         ]
+    if spec.ranking and usable:
+        from .ranking import custom_ranking
+
+        out["custom_ranking"] = custom_ranking(
+            usable, dict(spec.ranking.weights), spec.ranking.min_confidence
+        )
     out = {k: v for k, v in out.items() if v}  # drop empty rankings
     excluded = [f"{r['topic']} [{r['lang']}]" for r in records if r not in usable]
     if excluded and spec.effective_comparisons():

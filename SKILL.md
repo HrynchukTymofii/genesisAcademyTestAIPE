@@ -54,6 +54,10 @@ results go to `./wiki-interest-runs/<id>/` under the directory you run from.
 - Both commands accept: `--start YYYY-MM --end YYYY-MM` (explicit dates, replace
   `--period`), `--min-daily-views N` ("ignore series under N views/day"),
   `--metric raw`.
+- User states what "promising" means ("fast growth matters most, then size") →
+  `--rank-by growth=0.6,share=0.4` (criteria: growth, share, volume, certainty) and
+  optionally `--min-confidence moderate`. Quote `comparisons.custom_ranking`
+  (rank, score, points); scores are relative 0–100 among the compared series.
 - Topics with extra articles, multi-step or composite
   requests → write a spec YAML (see `references/spec-schema.md`, copy from
   `specs/examples/`) and `WI run spec.yaml`.

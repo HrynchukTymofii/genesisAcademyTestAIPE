@@ -81,10 +81,14 @@ def resolve(
     _run(go)
 
 
-def _period_fields(period, start, end, metric, min_views=0.0) -> dict:
+def _period_fields(period, start, end, metric, min_views=0.0, rank_by=None, min_conf="weak") -> dict:
     d = {"period": period, "metric": metric}
     if min_views:
         d["options"] = {"min_median_daily_views": min_views}
+    if rank_by:
+        from .ranking import parse_weights
+
+        d["ranking"] = {"weights": parse_weights(rank_by), "min_confidence": min_conf}
     if start:
         d["start"] = start
     if end:
@@ -110,6 +114,8 @@ def analyze(
     charts: str = typer.Option("", "--charts", help="Also draw charts: indexed,share,raw."),
     min_daily_views: float = typer.Option(0, "--min-daily-views", help="Exclude series with a lower median views/day from rankings."),
     confirmed: Optional[str] = typer.Option(None, "--confirmed", help="The user's own answer, quoted, after an ambiguous resolve (saved in the results)."),
+    rank_by: Optional[str] = typer.Option(None, "--rank-by", help="User's criteria as weights: growth=0.5,share=0.3,volume=0.1,certainty=0.1"),
+    min_confidence: str = typer.Option("weak", "--min-confidence", help="Only rank series with at least this confidence: weak|moderate|strong."),
 ):
     """One topic (one or more entities/articles summed) across one or more languages."""
 
@@ -135,7 +141,7 @@ def analyze(
             {
                 "topics": [t],
                 "languages": _split(langs),
-                **_period_fields(period, start, end, metric, min_daily_views),
+                **_period_fields(period, start, end, metric, min_daily_views, rank_by, min_confidence),
                 "output": {"charts": _charts(charts)},
             }
         )
@@ -155,6 +161,8 @@ def compare(
     charts: str = typer.Option("", "--charts", help="Also draw charts: indexed,share,raw."),
     min_daily_views: float = typer.Option(0, "--min-daily-views", help="Exclude series with a lower median views/day from rankings."),
     confirmed: Optional[str] = typer.Option(None, "--confirmed", help="The user's own answer, quoted, after an ambiguous resolve (saved in the results)."),
+    rank_by: Optional[str] = typer.Option(None, "--rank-by", help="User's criteria as weights: growth=0.5,share=0.3,volume=0.1,certainty=0.1"),
+    min_confidence: str = typer.Option("weak", "--min-confidence", help="Only rank series with at least this confidence: weak|moderate|strong."),
 ):
     """Several topics side by side in one or more languages."""
 
@@ -165,7 +173,7 @@ def compare(
             {
                 "topics": [{"qid": q} for q in _split(qids)],
                 "languages": _split(langs),
-                **_period_fields(period, start, end, metric, min_daily_views),
+                **_period_fields(period, start, end, metric, min_daily_views, rank_by, min_confidence),
                 "output": {"charts": _charts(charts)},
             }
         )

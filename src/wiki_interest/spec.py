@@ -79,6 +79,20 @@ class OptionsSpec(_Strict):
     n_boot: int = Field(1000, ge=0, le=10000)
 
 
+class RankingSpec(_Strict):
+    """User's own 'criteria of promise': weights per criterion (any positive scale)."""
+
+    weights: dict[Literal["growth", "share", "volume", "certainty"], float] = Field(min_length=1)
+    min_confidence: Literal["weak", "moderate", "strong"] = "weak"
+
+    @field_validator("weights")
+    @classmethod
+    def _weights(cls, v):
+        if any(x < 0 for x in v.values()) or not any(x > 0 for x in v.values()):
+            raise ValueError("weights must be >= 0 with at least one > 0")
+        return v
+
+
 class AnalysisSpec(_Strict):
     name: str | None = None
     topics: list[TopicSpec] = Field(min_length=1)
@@ -88,6 +102,7 @@ class AnalysisSpec(_Strict):
     end: str | None = None  # YYYY-MM, default: last complete month
     metric: Literal["share", "raw"] = "share"
     comparisons: list[Literal["languages", "topics"]] | None = None  # default: inferred
+    ranking: RankingSpec | None = None  # custom criteria ranking (comparisons.custom_ranking)
     output: OutputSpec = Field(default_factory=OutputSpec)
     options: OptionsSpec = Field(default_factory=OptionsSpec)
 

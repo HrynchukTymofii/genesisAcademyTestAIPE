@@ -48,6 +48,7 @@ HEAD_BG = colors.HexColor("#f3f2ee")
 # -- i18n -----------------------------------------------------------------------------
 T = {
     "en": {
+        "ranking": "Ranking by your criteria",
         "note": "Trend verdicts use share of edition views (views per million), which removes changes in each edition's overall traffic.",
         "title": "Wikipedia interest report",
         "headline": "Answer",
@@ -69,6 +70,7 @@ T = {
         "missing": "Not analysed: ",
     },
     "uk": {
+        "ranking": "Рейтинг за вашими критеріями",
         "note": "Висновки про тренд базуються на частці переглядів мовного розділу (на мільйон), що усуває вплив змін загального трафіку розділу.",
         "title": "Звіт про інтерес у Вікіпедії",
         "headline": "Відповідь",
@@ -90,6 +92,7 @@ T = {
         "missing": "Не проаналізовано: ",
     },
     "pl": {
+        "ranking": "Ranking według Twoich kryteriów",
         "note": "Werdykty trendu opierają się na udziale w wyświetleniach edycji (na milion), co usuwa wpływ zmian całego ruchu edycji.",
         "title": "Raport zainteresowania w Wikipedii",
         "headline": "Odpowiedź",
@@ -111,6 +114,7 @@ T = {
         "missing": "Nie przeanalizowano: ",
     },
     "cs": {
+        "ranking": "Pořadí podle vašich kritérií",
         "note": "Verdikty trendu vycházejí z podílu na zobrazeních jazykové verze (na milion), což odstraňuje vliv změn celkového provozu verze.",
         "title": "Zpráva o zájmu na Wikipedii",
         "headline": "Odpověď",
@@ -341,6 +345,16 @@ def _story(result, summary, tr, chart_path, layout, fonts):
         )
     )
     story.append(table)
+
+    cr = result.get("comparisons", {}).get("custom_ranking")
+    if cr and cr.get("ranked"):
+        weights = ", ".join(f"{c} {w * 100:.0f}%" for c, w in cr["weights"].items())
+        items = [
+            f"{r['rank']}. {r['topic']} [{r['lang']}]: {r['score']:.1f}"
+            for r in cr["ranked"][:max_rows]
+        ]
+        story.append(Paragraph(escape(f"{tr['ranking']} ({weights}; 0–100, relative)"), st["h"]))
+        story.append(Paragraph(escape("   ".join(items)), st["p"]))
 
     story.append(Paragraph(escape(tr["rec"]), st["h"]))
     story.append(Paragraph(escape(summary), st["p"]))

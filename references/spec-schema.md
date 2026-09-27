@@ -16,6 +16,8 @@ Run it with `wiki-interest run <spec.yaml>`. Examples: `specs/examples/`.
 | `end` | `YYYY-MM` | last complete month | Must be a complete month. |
 | `metric` | `share` \| `raw` | `share` | Basis for verdicts. Keep `share` unless the user asks for raw. |
 | `comparisons` | list of `languages`, `topics` | inferred | Rankings to produce. |
+| `ranking.weights` | map of `growth`, `share`, `volume`, `certainty` → weight | – | The user's own criteria of promise; weights of any positive scale, normalised to 1. CLI: `--rank-by growth=0.5,share=0.3` |
+| `ranking.min_confidence` | `weak` \| `moderate` \| `strong` | `weak` | Only rank series at least this certain. CLI: `--min-confidence` |
 | `output.charts` | list of `indexed`, `share`, `raw` | `[indexed]` | Charts saved in the run dir. |
 | `output.report.lang` | code | `en` | Report headings: `en`, `uk`, `pl`, `cs`. |
 | `output.report.summary` | string | – | 2–4 sentences; only when you already know the numbers (normally use the `report` command after the run). |
