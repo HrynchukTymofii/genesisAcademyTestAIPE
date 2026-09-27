@@ -109,7 +109,7 @@ def analyze(
     metric: str = typer.Option("share", "--metric", help="share (default, for verdicts) or raw."),
     charts: str = typer.Option("", "--charts", help="Also draw charts: indexed,share,raw."),
     min_daily_views: float = typer.Option(0, "--min-daily-views", help="Exclude series with a lower median views/day from rankings."),
-    confirmed: bool = typer.Option(False, "--confirmed", help="Only after the user chose an entity following an ambiguous resolve."),
+    confirmed: Optional[str] = typer.Option(None, "--confirmed", help="The user's own answer, quoted, after an ambiguous resolve (saved in the results)."),
 ):
     """One topic (one or more entities/articles summed) across one or more languages."""
 
@@ -154,7 +154,7 @@ def compare(
     metric: str = typer.Option("share", "--metric"),
     charts: str = typer.Option("", "--charts", help="Also draw charts: indexed,share,raw."),
     min_daily_views: float = typer.Option(0, "--min-daily-views", help="Exclude series with a lower median views/day from rankings."),
-    confirmed: bool = typer.Option(False, "--confirmed", help="Only after the user chose an entity following an ambiguous resolve."),
+    confirmed: Optional[str] = typer.Option(None, "--confirmed", help="The user's own answer, quoted, after an ambiguous resolve (saved in the results)."),
 ):
     """Several topics side by side in one or more languages."""
 
@@ -179,7 +179,7 @@ def run(
     spec_path: str = typer.Argument(..., help="spec.yaml, or a previous run dir (reuses its spec)."),
     set_: list[str] = typer.Option([], "--set", help="Override: key=value, e.g. period=36m, languages=pl,cs,sk."),
     save_as: Optional[str] = typer.Option(None, "--save-as", help="Also write the edited spec to this path."),
-    confirmed: bool = typer.Option(False, "--confirmed", help="Only after the user chose an entity following an ambiguous resolve."),
+    confirmed: Optional[str] = typer.Option(None, "--confirmed", help="The user's own answer, quoted, after an ambiguous resolve (saved in the results)."),
 ):
     """Run a YAML analysis spec (composite requests, follow-ups)."""
 

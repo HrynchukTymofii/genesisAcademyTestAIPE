@@ -32,8 +32,9 @@ results go to `./wiki-interest-runs/<id>/` under the directory you run from.
      analyze anything else instead (no broader or "closest" entity). You may propose
      options, e.g. for "learning English": exam articles summed (TOEFL + IELTS) or
      "English as a second language", but wait for the user's answer. The tool enforces
-     this: analysis fails with `confirmation_required` until you pass `--confirmed`,
-     which you may do only after the user has answered.
+     this: analysis fails with `confirmation_required` until you pass
+     `--confirmed "<the user's answer, quoted>"`, only after the user has answered.
+     The quote is saved in the results and audited.
    - `not_found` → try the English name or a synonym, then ask the user.
    - `missing` languages → say so explicitly. If `search_suggestions` appear later in
      analyze output, ask the user before using one with `--article lang:Title`.

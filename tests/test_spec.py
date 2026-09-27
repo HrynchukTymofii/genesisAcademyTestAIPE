@@ -99,7 +99,10 @@ def test_ambiguity_blocks_analysis_until_confirmed(recorded):
     code, out = cli(CLI_SCENARIOS["astronomy_uk"])  # a substitute topic: blocked
     assert code == 1 and out["error"] == "confirmation_required"
     assert "--confirmed" in out["next_step"] and "Q2731224" in out["message"]
-    code, out = cli(CLI_SCENARIOS["astronomy_uk"] + ["--confirmed"])  # user answered
+    code, out = cli(CLI_SCENARIOS["astronomy_uk"] + ["--confirmed", "ok"])  # no real quote
+    assert code == 1 and out["error"] == "confirmation_required"
+    code, out = cli(CLI_SCENARIOS["astronomy_uk"] + ["--confirmed", "use astronomy instead"])
     assert code == 0
+    assert out["user_confirmation"]["user_answer"] == "use astronomy instead"
     code, out = cli(CLI_SCENARIOS["astronomy_uk"])  # cleared
     assert code == 0

@@ -75,12 +75,23 @@ def _read_pending() -> list[dict]:
     return [p for p in items if now - p.get("created", 0) < PENDING_TTL]
 
 
-def check_pending(confirmed: bool) -> None:
-    """Raise if an ambiguity is waiting for the user; ``confirmed`` clears it."""
-    if confirmed:
-        _pending_path().unlink(missing_ok=True)
-        return
+def check_pending(confirmed: str | None) -> dict | None:
+    """Raise if an ambiguity is waiting for the user.
+
+    ``confirmed`` must quote the user's answer. It clears the pending state and is
+    returned for the run's results, so a bypass is visible and auditable rather than
+    silent (the tool cannot see the chat; the host app or the evals verify the quote).
+    """
     items = _read_pending()
+    if confirmed is not None:
+        if len(confirmed.split()) < 2:
+            raise ConfirmationRequired(
+                "--confirmed needs the user's answer quoted (at least two words), "
+                "e.g. --confirmed \"use the planet\".",
+                hint="Quote what the user wrote. If the user has not answered yet, ask them first.",
+            )
+        _pending_path().unlink(missing_ok=True)
+        return {"user_answer": confirmed, "pending": [p["query"] for p in items]}
     if items:
         p = items[-1]
         options = "; ".join(f"{c['qid']} {c['label']} — {c['description']}" for c in p["candidates"])
@@ -89,8 +100,9 @@ def check_pending(confirmed: bool) -> None:
             f"Options: {options}",
             hint="Ask the user which one they mean (or which articles to use) and end your turn. "
             "Do not analyse a substitute topic. After the user answers (or has moved on to a "
-            "different topic), rerun with --confirmed.",
+            "different topic), rerun with --confirmed \"<the user's answer, quoted>\".",
         )
+    return None
 
 
 def slugify(text: str, fallback: str = "x") -> str:
@@ -330,10 +342,10 @@ def run_analysis(
     spec: AnalysisSpec,
     command: str = "run",
     client: WikimediaClient | None = None,
-    confirmed: bool = False,
+    confirmed: str | None = None,
 ) -> dict:
     """Execute the spec. Returns the compact JSON summary (also saved in result.json)."""
-    check_pending(confirmed)
+    confirmation = check_pending(confirmed)
     client = client or WikimediaClient()
     period = parse_period(spec.period, spec.start, spec.end)
     topics = [_resolve_topic(client, t, spec.languages, i) for i, t in enumerate(spec.topics)]
@@ -408,6 +420,8 @@ def run_analysis(
         "headline": [headline(r, spec.metric) for r in records],
         "results": records,
     }
+    if confirmation:
+        summary["user_confirmation"] = confirmation
     comps = _comparisons(spec, records)
     if comps:
         summary["comparisons"] = comps
