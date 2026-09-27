@@ -77,3 +77,15 @@ def test_analysing_after_ambiguity_fails(tmp_path):
     p = transcript(tmp_path, "a", [unsure, ANALYZE], "Declining -47.1%, confidence strong.")
     r = grade_case(case, [p], tmp_path)
     assert r["checks"]["stopped_after_ambiguity(turn 1)"] is False
+
+
+def test_confirmation_must_quote_the_user(tmp_path):
+    case = {"id": "c", "turns": ["Compare meditation and wellness in Czech Wikipedia"]}
+    made_up = ('uv run --project s wiki-interest compare --qids Q1,Q2 --langs cs --confirmed "the user agreed to proceed"',
+               '{"ok": true, "results": []}')
+    r = grade_case(case, [transcript(tmp_path, "c", [made_up], "Done.")], tmp_path)
+    assert r["checks"]["confirmation_quotes_user"] is False
+    quoted = ('uv run --project s wiki-interest compare --qids Q1,Q2 --langs cs --confirmed "meditation and wellness"',
+              '{"ok": true, "results": []}')
+    r = grade_case(case, [transcript(tmp_path, "c2", [quoted], "Done.")], tmp_path)
+    assert r["checks"]["confirmation_quotes_user"] is True

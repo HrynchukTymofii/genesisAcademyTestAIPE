@@ -44,10 +44,11 @@ cases:
       - >-
         Use the TOEFL and IELTS articles plus "English as a second or foreign language",
         summed together as the topic.
+      - Yes, proceed with those three summed, even where some languages lack an article.
     report_lang: en
     manual:
       - Turn 1 asks which meaning to use (VOA programme is not the concept) and proposes options.
-      - Turn 2 sums the three entities (repeated --qid or a spec with qids) and makes the report.
+      - Turn 2 or 3 sums the three entities (repeated --qid or a spec with qids) and makes the report.
       - Report recommendation ranks audiences using growth AND share, with confidence.
 
   - id: ambiguous-mercury

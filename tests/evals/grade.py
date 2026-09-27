@@ -81,6 +81,8 @@ def unsupported_numbers(answer: str, sources: list[str]) -> list[str]:
         allowed |= _numbers_in_json_text(s)
         for m in re.finditer(r'"months":\s*(\d+)', s):  # "36 months" may be said as "3 years"
             allowed.add(int(m.group(1)) / 12)
+        for a, b in re.findall(r'"start":\s*"(\d{4})-\d\d",\s*"end":\s*"(\d{4})', s):
+            allowed.update(float(y) for y in range(int(a), int(b) + 1))  # years in the period
     bad = []
     clean = re.sub(r"\S*wiki-interest-runs\S*", " ", answer)  # paths are not claims
     clean = re.sub(r"(?m)^\s*(?:\d+[.)]|#+)\s", " ", clean)  # list numbering, headings
@@ -111,6 +113,17 @@ def grade_case(case: dict, transcripts: list[Path], workdir: Path) -> dict:
         analysed = any(c[0] in ANALYSIS_CMDS and '"ok": true' in c[2] for c in turns[-1]["commands"])
         if analysed:  # no analysis (e.g. no article exists) -> no label to state
             checks["confidence_label"] = bool(CONF_RE.search(answer))
+
+    # A --confirmed quote must come from the user, not be invented by the model.
+    user_words = set(re.findall(r"\w+", " ".join(case["turns"]).lower()))
+    for _, cmd, _ in all_cmds:
+        q = re.search(r"--confirmed\s+(?:\"([^\"]*)\"|'([^']*)')", cmd)
+        if "--confirmed" in cmd:
+            words = re.findall(r"\w+", ((q.group(1) or q.group(2)) if q else "").lower())
+            found = sum(w in user_words for w in words)
+            checks["confirmation_quotes_user"] = bool(words) and found / len(words) >= 0.6
+            if not checks["confirmation_quotes_user"]:
+                notes.append(f"--confirmed without a real user quote: {cmd[-120:]}")
 
     # Never analyse something else after resolve said "ask the user" (same turn).
     for i, t in enumerate(turns, start=1):
