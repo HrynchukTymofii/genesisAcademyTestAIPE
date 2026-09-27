@@ -13,6 +13,7 @@ import json
 import os
 import re
 import unicodedata
+from urllib.parse import quote, urlencode
 from datetime import datetime
 from pathlib import Path
 
@@ -197,6 +198,31 @@ def _resolve_topic(client, t: TopicSpec, langs: list[str], i: int) -> dict:
 
 
 # -- per-series record -------------------------------------------------------------
+def _sources(topic: dict, ts) -> dict:
+    """Public pages where a human can check every number of this series."""
+    start, end = ts.period.start.isoformat(), ts.period.end.isoformat()
+    common = {"platform": "all-access", "agent": "user", "start": start, "end": end}
+    return {
+        "wikipedia": [f"https://{ts.domain}/wiki/{quote(t.replace(' ', '_'))}" for t in ts.titles],
+        "wikidata": [f"https://www.wikidata.org/wiki/{q}" for q in topic["qids"]],
+        # same articles and dates; "redirects=1" sums redirects like we do (verified to
+        # match our totals exactly, and avoids the tool's 10-page limit)
+        "pageviews": "https://pageviews.wmcloud.org/?"
+        + urlencode(
+            {
+                **common,
+                "project": ts.domain,
+                "pages": "|".join(ts.titles),
+                **({"redirects": "1"} if len(ts.fetched_titles) > len(ts.titles) else {}),
+            }
+        ),
+        # whole edition, same dates: the denominator of share
+        "edition_total": "https://pageviews.wmcloud.org/siteviews/?"
+        + urlencode({**common, "sites": ts.domain}),
+        "api": "Wikimedia Pageviews REST API (per-article and aggregate, agent=user, daily)",
+    }
+
+
 def _record(topic: dict, lang: str, ts, st: dict, metric: str, base_months: int | None) -> dict:
     m_metric = ts.monthly_share if metric == "share" else ts.monthly_views
     base = auto_base_months(len(m_metric), base_months)
@@ -232,6 +258,7 @@ def _record(topic: dict, lang: str, ts, st: dict, metric: str, base_months: int 
         "data_from": st["data_from"],
         "reasons": st["reasons"],
         "warnings": ts.warnings + st["warnings"],
+        "sources": _sources(topic, ts),
     }
 
 
@@ -402,6 +429,7 @@ def run_analysis(
         ts.daily_frame().to_csv(run_dir / "series" / f"{stem}_daily.csv")
         series_files.append(m.as_posix())
         details[i]["series_file"] = f"series/{stem}_monthly.csv"
+        records[i]["sources"]["data_file"] = m.as_posix()  # the exact numbers used
 
     resolved = spec.model_copy(deep=True)
     resolved.topics = [t["spec"] for t in topics]

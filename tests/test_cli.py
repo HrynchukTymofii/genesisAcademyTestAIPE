@@ -137,3 +137,21 @@ def test_rank_by_cli(recorded):
     assert scores == sorted(scores, reverse=True)
     code, out = invoke(CLI_SCENARIOS["compare_uk_pl"] + ["--rank-by", "price=1"])
     assert code == 1 and out["error"] == "spec_error"
+
+
+def test_every_result_cites_checkable_sources(recorded):
+    from pathlib import Path
+
+    _, out = invoke("astronomy_uk")
+    src = out["results"][0]["sources"]
+    assert src["wikipedia"] == [
+        "https://uk.wikipedia.org/wiki/%D0%90%D1%81%D1%82%D1%80%D0%BE%D0%BD%D0%BE%D0%BC%D1%96%D1%8F"
+    ]
+    assert src["wikidata"] == ["https://www.wikidata.org/wiki/Q333"]
+    pv = src["pageviews"]
+    assert pv.startswith("https://pageviews.wmcloud.org/?") and "project=uk.wikipedia.org" in pv
+    assert "start=2023-09-01" in pv and "end=2026-08-31" in pv and "agent=user" in pv
+    assert "redirects=1" in pv  # redirects are merged, so the public page must merge them too
+    assert src["edition_total"].startswith("https://pageviews.wmcloud.org/siteviews/?")
+    assert "sites=uk.wikipedia.org" in src["edition_total"]
+    assert Path(src["data_file"]).exists()

@@ -7,6 +7,7 @@
 #                      ambiguous / needs_confirmation
 #   numbers_match      every number in the final answer appears in the tool JSON outputs
 #   confidence_label   the answer contains a confidence label (only if an analysis ran)
+#   cites_sources      the answer links pageviews.wmcloud.org or the Wikipedia article
 #   one_page_pdf       if a report was produced, the PDF has exactly one page
 # Per-case checks:
 #   must_ask           the agent must stop and ask (no analyze/compare/run before asking)

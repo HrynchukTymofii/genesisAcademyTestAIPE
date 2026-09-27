@@ -12,6 +12,7 @@ run's results, so the model cannot invent statistics.
 from __future__ import annotations
 
 import re
+from urllib.parse import unquote
 from io import BytesIO
 from pathlib import Path
 
@@ -48,6 +49,7 @@ HEAD_BG = colors.HexColor("#f3f2ee")
 # -- i18n -----------------------------------------------------------------------------
 T = {
     "en": {
+        "sources": "Sources",
         "ranking": "Ranking by your criteria",
         "note": "Trend verdicts use share of edition views (views per million), which removes changes in each edition's overall traffic.",
         "title": "Wikipedia interest report",
@@ -70,6 +72,7 @@ T = {
         "missing": "Not analysed: ",
     },
     "uk": {
+        "sources": "Джерела",
         "ranking": "Рейтинг за вашими критеріями",
         "note": "Висновки про тренд базуються на частці переглядів мовного розділу (на мільйон), що усуває вплив змін загального трафіку розділу.",
         "title": "Звіт про інтерес у Вікіпедії",
@@ -77,7 +80,7 @@ T = {
         "table": "Показники за рядами",
         "rec": "Рекомендація",
         "limits": "Припущення та обмеження",
-        "cols": ["Тема", "Мова", "Висновок", "Тренд %/рік (95% ДІ)", "Рік/рік %", "Перегл./день", "Частка /млн", "Довіра"],
+        "cols": ["Тема", "Мова", "Висновок", "Тренд %/рік (95% ДІ)", "Р/р %", "Перегл. /день", "Частка /млн", "Довіра"],
         "verdict": {"growing": "зростає", "declining": "спадає", "stable": "стабільно", "unclear": "неясно", "unknown": "невідомо"},
         "conf": {"strong": "висока (strong)", "moderate": "помірна (moderate)", "weak": "низька (weak)", "insufficient_data": "замало даних (insufficient_data)"},
         "hl": "{who}: {verdict} {pct}%/рік (95% ДІ {lo}..{hi}); довіра: {conf}",
@@ -92,6 +95,7 @@ T = {
         "missing": "Не проаналізовано: ",
     },
     "pl": {
+        "sources": "Źródła",
         "ranking": "Ranking według Twoich kryteriów",
         "note": "Werdykty trendu opierają się na udziale w wyświetleniach edycji (na milion), co usuwa wpływ zmian całego ruchu edycji.",
         "title": "Raport zainteresowania w Wikipedii",
@@ -114,6 +118,7 @@ T = {
         "missing": "Nie przeanalizowano: ",
     },
     "cs": {
+        "sources": "Zdroje",
         "ranking": "Pořadí podle vašich kritérií",
         "note": "Verdikty trendu vycházejí z podílu na zobrazeních jazykové verze (na milion), což odstraňuje vliv změn celkového provozu verze.",
         "title": "Zpráva o zájmu na Wikipedii",
@@ -184,6 +189,7 @@ def _parse_candidates(token: str) -> list[float]:
     return out
 
 
+URL_RE = re.compile(r"https?://\S+")
 SUMMARY_KEYS = ("period", "headline", "results", "comparisons", "missing", "topics")
 
 
@@ -196,11 +202,12 @@ def allowed_numbers(result: dict) -> set[float]:
         if isinstance(o, (int, float)):
             vals.add(abs(float(o)))
         elif isinstance(o, str):
-            for tok in NUM_RE.findall(o):
+            for tok in NUM_RE.findall(URL_RE.sub(" ", o)):
                 vals.update(_parse_candidates(tok))
         elif isinstance(o, dict):
-            for v in o.values():
-                walk(v)
+            for k, v in o.items():
+                if k != "sources":  # links and dates are not statistics
+                    walk(v)
         elif isinstance(o, list):
             for v in o:
                 walk(v)
@@ -260,8 +267,17 @@ def _headlines(result: dict, tr: dict) -> list[str]:
     return out
 
 
-def _limitations(result: dict, tr: dict) -> list[str]:
+AI_SHIFT = {
+    "en": "Part of Wikipedia's audience has moved to AI assistants and search answers, unevenly by topic (factual and school topics more). Share corrects the edition-wide drop but not these topic differences, so a falling share can mean fewer lookups on Wikipedia rather than less interest; comparing options is more reliable than reading absolute declines.",
+    "uk": "Частина аудиторії Вікіпедії перейшла до AI-асистентів і відповідей пошуковиків, нерівномірно за темами (фактичні й шкільні теми — більше). Частка враховує загальне падіння розділу, але не ці відмінності між темами, тож спад частки може означати менше пошуків у Вікіпедії, а не менший інтерес; порівняння варіантів надійніше за абсолютні спади.",
+    "pl": "Część czytelników Wikipedii przeszła do asystentów AI i odpowiedzi wyszukiwarek, nierównomiernie według tematów (tematy faktograficzne i szkolne bardziej). Udział koryguje ogólny spadek edycji, ale nie te różnice, więc spadek udziału może oznaczać mniej wyszukiwań w Wikipedii, a nie mniejsze zainteresowanie; porównywanie opcji jest bardziej wiarygodne niż bezwzględne spadki.",
+    "cs": "Část čtenářů Wikipedie přešla k AI asistentům a odpovědím vyhledávačů, nerovnoměrně podle témat (faktická a školní témata více). Podíl koriguje celkový pokles verze, ale ne tyto rozdíly, takže pokles podílu může znamenat méně vyhledávání na Wikipedii, ne menší zájem; porovnání možností je spolehlivější než absolutní poklesy.",
+}
+
+
+def _limitations(result: dict, tr: dict, lang: str = "en") -> list[str]:
     items = list(tr["std"]) if result.get("metric", "share") == "share" else [tr["std_raw"], *tr["std"][1:]]
+    items.insert(1, AI_SHIFT.get(lang, AI_SHIFT["en"]))
     seen = set()
     for r in result["results"]:
         for w in r.get("warnings", []):
@@ -275,7 +291,7 @@ def _limitations(result: dict, tr: dict) -> list[str]:
     return items
 
 
-def _story(result, summary, tr, chart_path, layout, fonts):
+def _story(result, summary, tr, chart_path, layout, fonts, lang="en"):
     size, chart_h, max_rows, max_limits = layout
     reg, bold = fonts
     st = {
@@ -327,7 +343,7 @@ def _story(result, summary, tr, chart_path, layout, fonts):
                 Paragraph(escape(tr["conf"].get(r["confidence"], r["confidence"])), st["cell"]),
             ]
         )
-    widths = [x * mm for x in (30, 14, 19, 36, 15, 20, 17, 29)]
+    widths = [x * mm for x in (27, 14, 22, 36, 15, 20, 17, 29)]
     table = Table(data, colWidths=widths, repeatRows=1)
     table.setStyle(
         TableStyle(
@@ -360,12 +376,31 @@ def _story(result, summary, tr, chart_path, layout, fonts):
     story.append(Paragraph(escape(summary), st["p"]))
 
     story.append(Paragraph(escape(tr["limits"]), st["h"]))
-    lims = _limitations(result, tr)
+    lims = _limitations(result, tr, lang)
     if len(lims) > max_limits:
         truncated.append(f"limitations {len(lims)} -> {max_limits}")
         extra = len(lims) - max_limits + 1
         lims = lims[: max_limits - 1] + [f"(+{extra} more in result.json)"]
     story += [Paragraph(escape(x), st["li"], bulletText="•") for x in lims]
+
+    # Sources: clickable public pages where every number can be checked
+    link = '<link href="{}" color="#2a78d6">{}</link>'
+    lines = []
+    for r in result["results"][:max_rows]:
+        src = r.get("sources")
+        if not src:
+            continue
+        parts = [
+            link.format(escape(u, {'"': "&quot;"}), escape("Wikipedia: " + unquote(u.rsplit("/wiki/", 1)[-1]).replace("_", " ")))
+            for u in src.get("wikipedia", [])
+        ]
+        parts += [link.format(escape(u), escape(u.rsplit("/", 1)[-1])) for u in src.get("wikidata", [])]
+        parts.append(link.format(escape(src["pageviews"], {'"': "&quot;"}), "pageviews"))
+        parts.append(link.format(escape(src["edition_total"], {'"': "&quot;"}), "edition total"))
+        lines.append(escape(f"{r['topic']} [{r['lang']}]: ") + " · ".join(parts))
+    if lines:
+        story.append(Paragraph(escape(tr["sources"]), st["h"]))
+        story += [Paragraph(x, st["li"], bulletText="•") for x in lines]
 
     p = result["period"]
     story += [
@@ -435,12 +470,12 @@ def build_report(
     fonts = register_fonts()
     pdf, pages, truncated = b"", 0, []
     for layout in LAYOUTS:
-        story, truncated = _story(result, summary, tr, chart_path, layout, fonts)
+        story, truncated = _story(result, summary, tr, chart_path, layout, fonts, lang)
         pdf, pages = _render(story)
         if pages == 1:
             break
     if pages != 1:  # last resort: scale everything into one frame
-        story, truncated = _story(result, summary, tr, chart_path, LAYOUTS[-1], fonts)
+        story, truncated = _story(result, summary, tr, chart_path, LAYOUTS[-1], fonts, lang)
         frame_w, frame_h = A4[0] - 28 * mm, A4[1] - 24 * mm - 1
         pdf, pages = _render([KeepInFrame(frame_w, frame_h, story, mode="shrink")])
         truncated.append("content shrunk to fit one page")

@@ -67,9 +67,12 @@ def parse_transcript(path: Path) -> dict:
 
 
 # -- checks --------------------------------------------------------------------------------
+URL_RE = re.compile(r"https?://\S+")
+
+
 def _numbers_in_json_text(text: str) -> set[float]:
     vals: set[float] = set()
-    for tok in NUM_RE.findall(text):
+    for tok in NUM_RE.findall(URL_RE.sub(" ", text)):  # digits inside links are not data
         vals.update(_parse_candidates(tok))
     return vals
 
@@ -84,7 +87,7 @@ def unsupported_numbers(answer: str, sources: list[str]) -> list[str]:
         for a, b in re.findall(r'"start":\s*"(\d{4})-\d\d",\s*"end":\s*"(\d{4})', s):
             allowed.update(float(y) for y in range(int(a), int(b) + 1))  # years in the period
     bad = []
-    clean = re.sub(r"\S*wiki-interest-runs\S*", " ", answer)  # paths are not claims
+    clean = re.sub(r"\S*wiki-interest-runs\S*", " ", URL_RE.sub(" ", answer))  # links/paths are not claims
     clean = re.sub(r"(?m)^\s*(?:\d+[.)]|#+)\s", " ", clean)  # list numbering, headings
     for tok in NUM_RE.findall(clean):
         cands = _parse_candidates(tok)
@@ -111,8 +114,9 @@ def grade_case(case: dict, transcripts: list[Path], workdir: Path) -> dict:
     else:
         checks["resolve_first"] = bool(first) and first[0][0] == "resolve"
         analysed = any(c[0] in ANALYSIS_CMDS and '"ok": true' in c[2] for c in turns[-1]["commands"])
-        if analysed:  # no analysis (e.g. no article exists) -> no label to state
+        if analysed:  # no analysis (e.g. no article exists) -> no label, no sources
             checks["confidence_label"] = bool(CONF_RE.search(answer))
+            checks["cites_sources"] = bool(re.search(r"pageviews\.wmcloud\.org|wikipedia\.org", answer))
 
     # A --confirmed quote must come from the user, not be invented by the model.
     user_words = set(re.findall(r"\w+", " ".join(case["turns"]).lower()))

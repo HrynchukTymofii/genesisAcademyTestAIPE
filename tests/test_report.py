@@ -84,3 +84,22 @@ def test_chart_warns_when_series_are_omitted(run_dir, monkeypatch):
     code, out = cli(["chart", run_dir, "--kind", "indexed"])
     assert code == 0
     assert "1 more are not drawn" in out["warnings"][0]
+
+
+def test_report_lists_clickable_sources(run_dir):
+    code, out = cli(["report", run_dir, "--summary", "Interest is declining in both topics."])
+    assert code == 0
+    pdf = Path(out["report"]).read_bytes()
+    assert b"/URI" in pdf and b"pageviews.wmcloud.org" in pdf and b"wikidata.org" in pdf
+
+
+def test_guard_ignores_digits_inside_links():
+    from wiki_interest.report import allowed_numbers
+
+    result = {"period": {"months": 24}, "results": [
+        {"trend_pct_per_year": -5.0,
+         "sources": {"pageviews": "https://x.org/?start=2031-07-19&pages=%97%83"},
+         "reasons": ["see https://y.org/9876 for details"]}]}
+    allowed = allowed_numbers(result)
+    assert 5.0 in allowed
+    assert not {2031.0, 97.0, 83.0, 9876.0} & allowed
