@@ -110,3 +110,32 @@ safely:
 - Track pass rates per check over time; a drop blocks release of SKILL.md changes.
 - Already added from the first smoke run: `python -m uv` fallback, "never cd into
   the skill dir", `needs_confirmation` for "learning English".
+- Later runs added: enforced confirmation after ambiguous topics (with an audited quote),
+  tool-computed rankings and comparisons, `--min-daily-views`, source citations, and a
+  skill description that triggers for "what did we find earlier?".
+
+## 11. Separating "moved to AI" from "lost interest"
+
+Share of edition views removes the edition-wide decline, but AI assistants replace some
+topics faster than others (factual and school-type lookups more than news or culture).
+Plan: benchmark each topic against a **peer basket** of similar articles (e.g. astronomy
+vs other sciences in the same language, chosen via Wikidata classes or categories).
+- Report the topic's trend *relative to its peers* next to the share trend.
+- Falling like its peers → mostly a channel shift; falling faster → a real relative loss.
+- Mark the ChatGPT launch (late 2022) as a structural break: compare before vs after
+  instead of fitting one line across it.
+
+## 12. Live verification of chat answers
+
+The number check runs live for PDFs and in evals for chat answers. Next: run the same
+checker on every chat answer as it is produced (e.g. a Claude Code hook after each
+response) and ask the model to correct any unsupported number before the user sees it.
+Also check that each number is attached to the right series (topic, language), not only
+that it exists in the results.
+
+## 13. Meaning-based search in history
+
+`history` searches by keywords, topic, language and QID, which is enough for hundreds of
+runs. For larger histories, add embeddings of each run's request and headline with a
+vector index, combined with the keyword search (hybrid retrieval), so "that diet thing"
+finds "intermittent fasting".
