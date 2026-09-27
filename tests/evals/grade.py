@@ -16,7 +16,7 @@ from pathlib import Path
 
 import yaml
 
-from wiki_interest.report import NUM_RE, T, _parse_candidates, count_pdf_pages
+from wiki_analyst.report import NUM_RE, T, _parse_candidates, count_pdf_pages
 
 HERE = Path(__file__).parent
 CONF_RE = re.compile(
@@ -58,7 +58,7 @@ def parse_transcript(path: Path) -> dict:
                 if isinstance(c, dict) and c.get("type") == "tool_result":
                     outputs.append(_text(c.get("content")))
                     cmd = calls.get(c.get("tool_use_id"), "")
-                    m = re.search(r"wiki-interest(?:\.exe)?\s+([a-z]+)", cmd)
+                    m = re.search(r"wiki-analyst(?:\.exe)?\s+([a-z]+)", cmd)
                     if m and m.group(1) != "help":
                         commands.append((m.group(1), cmd, _text(c.get("content"))))
         elif ev.get("type") == "result" and ev.get("result"):
@@ -87,7 +87,7 @@ def unsupported_numbers(answer: str, sources: list[str]) -> list[str]:
         for a, b in re.findall(r'"start":\s*"(\d{4})-\d\d",\s*"end":\s*"(\d{4})', s):
             allowed.update(float(y) for y in range(int(a), int(b) + 1))  # years in the period
     bad = []
-    clean = re.sub(r"\S*wiki-interest-runs\S*", " ", URL_RE.sub(" ", answer))  # links/paths are not claims
+    clean = re.sub(r"\S*wiki-analyst-runs\S*", " ", URL_RE.sub(" ", answer))  # links/paths are not claims
     clean = re.sub(r"(?m)^\s*(?:\d+[.)]|#+)\s", " ", clean)  # list numbering, headings
     for tok in NUM_RE.findall(clean):
         cands = _parse_candidates(tok)
@@ -183,7 +183,7 @@ def grade_case(case: dict, transcripts: list[Path], workdir: Path) -> dict:
 
 def main(argv=None) -> int:
     ap = argparse.ArgumentParser()
-    ap.add_argument("--workdir", default=str(Path(tempfile.gettempdir()) / "wiki-interest-evals"))
+    ap.add_argument("--workdir", default=str(Path(tempfile.gettempdir()) / "wiki-analyst-evals"))
     ap.add_argument("--cases", default="")
     args = ap.parse_args(argv)
     workdir = Path(args.workdir)

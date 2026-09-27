@@ -1,9 +1,9 @@
 """Re-record HTTP fixtures from the live Wikimedia APIs.
 
-    WIKI_INTEREST_TODAY=2026-09-26 uv run python tests/fixtures/record_fixtures.py
+    WIKI_ANALYST_TODAY=2026-09-26 uv run python tests/fixtures/record_fixtures.py
 
 Every request made by the scenarios below is saved to tests/fixtures/http/.
-Keep WIKI_INTEREST_TODAY equal to FIXED_TODAY in tests/conftest.py.
+Keep WIKI_ANALYST_TODAY equal to FIXED_TODAY in tests/conftest.py.
 """
 
 from __future__ import annotations
@@ -20,8 +20,8 @@ sys.path.insert(0, str(HERE))
 
 
 def library_scenarios(client):
-    from wiki_interest.resolve import entity_info, resolve_topic
-    from wiki_interest.series import build_topic_series, parse_period
+    from wiki_analyst.resolve import entity_info, resolve_topic
+    from wiki_analyst.series import build_topic_series, parse_period
 
     resolve_topic(client, "astronomy", ["uk"])
     resolve_topic(client, "mercury", ["pl"])
@@ -33,23 +33,23 @@ def library_scenarios(client):
 
 
 def main() -> None:
-    assert os.environ.get("WIKI_INTEREST_TODAY"), "set WIKI_INTEREST_TODAY to the fixed test date"
+    assert os.environ.get("WIKI_ANALYST_TODAY"), "set WIKI_ANALYST_TODAY to the fixed test date"
     shutil.rmtree(HTTP_DIR, ignore_errors=True)
-    os.environ["WIKI_INTEREST_RECORD_DIR"] = str(HTTP_DIR)
+    os.environ["WIKI_ANALYST_RECORD_DIR"] = str(HTTP_DIR)
     from typer.testing import CliRunner
 
     from scenarios import CLI_SCENARIOS
-    from wiki_interest.api import WikimediaClient
-    from wiki_interest.cache import Cache
-    from wiki_interest.cli import app
+    from wiki_analyst.api import WikimediaClient
+    from wiki_analyst.cache import Cache
+    from wiki_analyst.cli import app
 
     client = WikimediaClient(cache=Cache(":memory:"))
     library_scenarios(client)
     client.close()
 
     with tempfile.TemporaryDirectory(ignore_cleanup_errors=True) as tmp:
-        os.environ["WIKI_INTEREST_CACHE"] = str(Path(tmp) / "cache.sqlite")
-        os.environ["WIKI_INTEREST_RUNS"] = str(Path(tmp) / "runs")
+        os.environ["WIKI_ANALYST_CACHE"] = str(Path(tmp) / "cache.sqlite")
+        os.environ["WIKI_ANALYST_RUNS"] = str(Path(tmp) / "runs")
         runner = CliRunner()
         for name, args in CLI_SCENARIOS.items():
             res = runner.invoke(app, args)

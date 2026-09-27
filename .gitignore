@@ -11,5 +11,5 @@ dist/
 build/
 
 # analysis outputs and caches
-wiki-interest-runs/
+wiki-analyst-runs/
 *.sqlite

@@ -1,4 +1,4 @@
-"""wiki-interest: Wikipedia pageview trend analysis for topic and language-market decisions.
+"""wiki-analyst: Wikipedia pageview trend analysis for topic and language-market decisions.
 
 Importable library for cases the CLI and spec cannot express (see
 references/library-api.md). Names are loaded lazily so the CLI starts fast.
@@ -41,4 +41,4 @@ def __getattr__(name: str):
         from importlib import import_module
 
         return getattr(import_module(f".{_EXPORTS[name]}", __name__), name)
-    raise AttributeError(f"module 'wiki_interest' has no attribute {name!r}")
+    raise AttributeError(f"module 'wiki_analyst' has no attribute {name!r}")

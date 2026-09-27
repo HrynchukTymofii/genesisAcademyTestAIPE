@@ -13,7 +13,7 @@ Never re-implement the statistics: call `assess`/`trend` and quote their output.
 ## Typical glue script
 
 ```python
-from wiki_interest import (
+from wiki_analyst import (
     WikimediaClient, entity_info, parse_period, build_topic_series, assess, load_run,
 )
 

@@ -1,7 +1,7 @@
 import pytest
 
-from wiki_interest.errors import ResolveError
-from wiki_interest.resolve import entity_info, missing_message, resolve_topic, validate_langs
+from wiki_analyst.errors import ResolveError
+from wiki_analyst.resolve import entity_info, missing_message, resolve_topic, validate_langs
 
 
 def test_validate_langs():

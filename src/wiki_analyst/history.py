@@ -93,8 +93,8 @@ def search(query: str = "", limit: int = 8) -> dict:
     }
     if matches:
         out["next_step"] = (
-            "Re-read a run's numbers with: wiki-interest history --run <run_dir>. "
-            "Change it with: wiki-interest run <run_dir> --set key=value."
+            "Re-read a run's numbers with: wiki-analyst history --run <run_dir>. "
+            "Change it with: wiki-analyst run <run_dir> --set key=value."
         )
     else:
         out["next_step"] = (
@@ -110,7 +110,7 @@ def show(run_dir: str) -> dict:
     if not (p / RESULT_FILE).exists():
         raise WikiInterestError(
             f"No saved analysis in {run_dir}.",
-            hint="Use a run_dir from `wiki-interest history <keywords>`.",
+            hint="Use a run_dir from `wiki-analyst history <keywords>`.",
         )
     r = load_run(p)
     return {"ok": True, "command": "history", **{k: r[k] for k in COMPACT_KEYS if k in r}}

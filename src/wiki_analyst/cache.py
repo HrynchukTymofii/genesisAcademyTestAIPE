@@ -23,10 +23,10 @@ CREATE TABLE IF NOT EXISTS responses (
 
 
 def default_cache_path() -> Path:
-    env = os.environ.get("WIKI_INTEREST_CACHE")
+    env = os.environ.get("WIKI_ANALYST_CACHE")
     if env:
         return Path(env)
-    return Path.home() / ".cache" / "wiki-interest" / "cache.sqlite"
+    return Path.home() / ".cache" / "wiki-analyst" / "cache.sqlite"
 
 
 class Cache:

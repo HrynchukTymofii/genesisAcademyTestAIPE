@@ -74,7 +74,7 @@ def resolve(
             record_pending(topic, out["status"], out.get("candidates") or [out, *out.get("alternatives", [])])
         out = {"ok": True, "command": "resolve", **out}
         if out["status"] in ("resolved", "needs_confirmation"):
-            cmd = f"wiki-interest analyze --qid {out['qid']} --langs {langs} --period 24m"
+            cmd = f"wiki-analyst analyze --qid {out['qid']} --langs {langs} --period 24m"
             out["next_step"] = cmd if out["status"] == "resolved" else "Confirm with the user, then: " + cmd
         return out
 

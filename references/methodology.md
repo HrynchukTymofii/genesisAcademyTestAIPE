@@ -1,6 +1,6 @@
 # Methodology
 
-All statistics are computed in `src/wiki_interest/stats.py`; they are deterministic
+All statistics are computed in `src/wiki_analyst/stats.py`; they are deterministic
 (bootstrap is seeded) and unit-tested on synthetic series.
 
 ## Data

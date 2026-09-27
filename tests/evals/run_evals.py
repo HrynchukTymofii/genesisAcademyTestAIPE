@@ -3,8 +3,8 @@
     uv run python tests/evals/run_evals.py                 # all cases, --model haiku
     uv run python tests/evals/run_evals.py --cases ex1-fasting-pl-cs,ambiguous-mercury
 
-Creates <workdir> (default <system temp>/wiki-interest-evals, outside the repo) with the skill installed as
-a project skill at <workdir>/.claude/skills/wiki-interest, runs each case with
+Creates <workdir> (default <system temp>/wiki-analyst-evals, outside the repo) with the skill installed as
+a project skill at <workdir>/.claude/skills/wiki-analyst, runs each case with
 `claude -p ... --model haiku --output-format stream-json --verbose` (multi-turn cases
 continue the same session with --resume), saves transcripts, then runs grade.py.
 Needs network (Wikimedia) and a logged-in `claude` CLI.
@@ -26,15 +26,15 @@ import yaml
 HERE = Path(__file__).parent
 SKILL_DIR = HERE.parents[1]
 IGNORE = shutil.ignore_patterns(
-    ".venv", "__pycache__", ".pytest_cache", "wiki-interest-runs", "tests", "*.pyc"
+    ".venv", "__pycache__", ".pytest_cache", "wiki-analyst-runs", "tests", "*.pyc"
 )
 TOOLS = "Bash,PowerShell,Read,Write,Edit,Glob,Grep"
 # Outside the repo, so the agent cannot stumble into the skill's source tree.
-DEFAULT_WORKDIR = Path(tempfile.gettempdir()) / "wiki-interest-evals"
+DEFAULT_WORKDIR = Path(tempfile.gettempdir()) / "wiki-analyst-evals"
 
 
 def install_skill(workdir: Path) -> None:
-    target = workdir / ".claude" / "skills" / "wiki-interest"
+    target = workdir / ".claude" / "skills" / "wiki-analyst"
     if target.exists():
         shutil.rmtree(target)
     shutil.copytree(SKILL_DIR, target, ignore=IGNORE)
@@ -91,7 +91,7 @@ def main() -> int:
         for old in (workdir / "transcripts").glob(f"{case['id']}.turn*.jsonl"):
             old.unlink()
         # each case is a fresh conversation: drop another case's unanswered ambiguity
-        (workdir / "wiki-interest-runs" / ".pending-confirmation.json").unlink(missing_ok=True)
+        (workdir / "wiki-analyst-runs" / ".pending-confirmation.json").unlink(missing_ok=True)
         session = None
         for i, turn in enumerate(case["turns"], start=1):
             out = workdir / "transcripts" / f"{case['id']}.turn{i}.jsonl"

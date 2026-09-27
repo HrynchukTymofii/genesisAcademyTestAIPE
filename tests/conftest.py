@@ -10,8 +10,8 @@ import httpx
 import pytest
 import respx
 
-from wiki_interest.api import WikimediaClient
-from wiki_interest.cache import Cache
+from wiki_analyst.api import WikimediaClient
+from wiki_analyst.cache import Cache
 
 HTTP_DIR = Path(__file__).parent / "fixtures" / "http"
 FIXED_TODAY = "2026-09-26"  # date the fixtures were recorded
@@ -28,9 +28,9 @@ def _load_recordings() -> dict[str, tuple[int, str]]:
 @pytest.fixture
 def env(monkeypatch, tmp_path):
     """Isolated cache, fixed 'today', temp working dir for run outputs."""
-    monkeypatch.setenv("WIKI_INTEREST_TODAY", FIXED_TODAY)
-    monkeypatch.setenv("WIKI_INTEREST_CACHE", str(tmp_path / "cache.sqlite"))
-    monkeypatch.delenv("WIKI_INTEREST_RECORD_DIR", raising=False)
+    monkeypatch.setenv("WIKI_ANALYST_TODAY", FIXED_TODAY)
+    monkeypatch.setenv("WIKI_ANALYST_CACHE", str(tmp_path / "cache.sqlite"))
+    monkeypatch.delenv("WIKI_ANALYST_RECORD_DIR", raising=False)
     monkeypatch.chdir(tmp_path)
     return tmp_path
 

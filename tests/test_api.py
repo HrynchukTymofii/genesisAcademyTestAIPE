@@ -4,9 +4,9 @@ import httpx
 import pytest
 import respx
 
-from wiki_interest.api import WikimediaClient, encode_title, pageview_ttl, user_agent
-from wiki_interest.cache import Cache
-from wiki_interest.errors import ApiError
+from wiki_analyst.api import WikimediaClient, encode_title, pageview_ttl, user_agent
+from wiki_analyst.cache import Cache
+from wiki_analyst.errors import ApiError
 
 
 def make_client():
@@ -15,7 +15,7 @@ def make_client():
 
 def test_user_agent_has_contact():
     ua = user_agent()
-    assert ua.startswith("wiki-interest/") and "(" in ua and "http" in ua
+    assert ua.startswith("wiki-analyst/") and "(" in ua and "http" in ua
 
 
 def test_encode_title():

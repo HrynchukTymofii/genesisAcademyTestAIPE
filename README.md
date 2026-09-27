@@ -1,4 +1,4 @@
-# wiki-interest
+# wiki-analyst
 
 An Agent Skill (Claude Code format) that uses Wikipedia pageviews to help B2C founders
 decide **which topics to develop and which language markets to launch in**. It fetches
@@ -10,8 +10,8 @@ all data work and statistics. The model only translates requests into commands, 
 compact JSON, and writes the answer.
 
 ```
-wiki-interest resolve "astronomy" --langs uk
-wiki-interest analyze --qid Q333 --langs uk --period 36m
+wiki-analyst resolve "astronomy" --langs uk
+wiki-analyst analyze --qid Q333 --langs uk --period 36m
 → astronomy [uk]: declining -47.1%/yr in share of edition views (95% CI -53.2..-41.4), confidence strong
 ```
 
@@ -37,23 +37,23 @@ dependencies from `uv.lock` on first run) and internet access.
 
 ```bash
 # install as a personal Claude Code skill
-git clone https://github.com/HrynchukTymofii/genesisAcademyTestAIPE.git ~/.claude/skills/wiki-interest
-uv run --project ~/.claude/skills/wiki-interest wiki-interest --help   # first run installs dependencies
+git clone https://github.com/HrynchukTymofii/genesisAcademyTestAIPE.git ~/.claude/skills/wiki-analyst
+uv run --project ~/.claude/skills/wiki-analyst wiki-analyst --help   # first run installs dependencies
 ```
 
 Then start `claude` in any folder and ask, e.g. "Is interest in astronomy growing in
-Ukrainian Wikipedia?", or type `/wiki-interest <question>`. The model runs every command
-as `uv run --project <skill_dir> wiki-interest <command>` from your current folder;
-results go to `./wiki-interest-runs/<id>/`.
+Ukrainian Wikipedia?", or type `/wiki-analyst <question>`. The model runs every command
+as `uv run --project <skill_dir> wiki-analyst <command>` from your current folder;
+results go to `./wiki-analyst-runs/<id>/`.
 
 Environment variables (all optional):
 
 | Variable | Default | Purpose |
 |---|---|---|
-| `WIKI_INTEREST_CONTACT` | repo URL | Contact info in the User-Agent (Wikimedia policy). Set to your email/URL. |
-| `WIKI_INTEREST_CACHE` | `~/.cache/wiki-interest/cache.sqlite` | Response cache. |
-| `WIKI_INTEREST_RUNS` | `./wiki-interest-runs` | Where run folders are created. |
-| `WIKI_INTEREST_TODAY` | today | Fix "today" (reproducible runs, tests). |
+| `WIKI_ANALYST_CONTACT` | repo URL | Contact info in the User-Agent (Wikimedia policy). Set to your email/URL. |
+| `WIKI_ANALYST_CACHE` | `~/.cache/wiki-analyst/cache.sqlite` | Response cache. |
+| `WIKI_ANALYST_RUNS` | `./wiki-analyst-runs` | Where run folders are created. |
+| `WIKI_ANALYST_TODAY` | today | Fix "today" (reproducible runs, tests). |
 
 **Windows and corporate/antivirus TLS notes**
 - If the first run fails with `invalid peer certificate: UnknownIssuer`, set
@@ -90,7 +90,7 @@ Errors are JSON too, with a `next_step` a model can follow, e.g.
 ```
 SKILL.md ──► the model: resolve → confirm → analyze/compare/run → read JSON → answer (+ sources) → chart/report
                   │
-src/wiki_interest/
+src/wiki_analyst/
   cli.py      typer commands, JSON in/out, errors → JSON
   engine.py   runs a spec end to end; run folder (result.json, spec.yaml, series/, charts/);
               rankings, sources, pending confirmations

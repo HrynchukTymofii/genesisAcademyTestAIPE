@@ -15,4 +15,4 @@ output:
   report:
     lang: en
     # summary: the agent writes 2-4 sentences AFTER reading the run JSON, then runs
-    #   wiki-interest report <run_dir> --summary "..." --lang en
+    #   wiki-analyst report <run_dir> --summary "..." --lang en

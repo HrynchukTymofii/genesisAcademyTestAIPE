@@ -408,7 +408,7 @@ def _story(result, summary, tr, chart_path, layout, fonts, lang="en"):
         Paragraph(
             escape(
                 tr["period"].format(start=p["start"], end=p["end"], months=p["months"], today=today().isoformat())
-                + f" Source: Wikimedia Pageviews API, agent=user. wiki-interest {__version__}."
+                + f" Source: Wikimedia Pageviews API, agent=user. wiki-analyst {__version__}."
             ),
             st["sub"],
         ),
@@ -420,7 +420,7 @@ def _render(story, pagesize=A4) -> tuple[bytes, int]:
     buf = BytesIO()
     doc = SimpleDocTemplate(
         buf, pagesize=pagesize, leftMargin=14 * mm, rightMargin=14 * mm,
-        topMargin=12 * mm, bottomMargin=12 * mm, title="wiki-interest report",
+        topMargin=12 * mm, bottomMargin=12 * mm, title="wiki-analyst report",
     )
     doc.build(story)
     return buf.getvalue(), doc.page

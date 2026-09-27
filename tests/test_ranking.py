@@ -1,8 +1,8 @@
 import pytest
 
-from wiki_interest.errors import SpecError
-from wiki_interest.ranking import custom_ranking, parse_weights
-from wiki_interest.spec import validate_spec
+from wiki_analyst.errors import SpecError
+from wiki_analyst.ranking import custom_ranking, parse_weights
+from wiki_analyst.spec import validate_spec
 
 
 def rec(lang, trend, share, views, conf):

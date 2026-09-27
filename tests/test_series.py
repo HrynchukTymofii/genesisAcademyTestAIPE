@@ -5,10 +5,10 @@ import pandas as pd
 import pytest
 import respx
 
-from wiki_interest.api import WikimediaClient
-from wiki_interest.cache import Cache
-from wiki_interest.errors import DataError
-from wiki_interest.series import (
+from wiki_analyst.api import WikimediaClient
+from wiki_analyst.cache import Cache
+from wiki_analyst.errors import DataError
+from wiki_analyst.series import (
     Period,
     build_topic_series,
     indexed,

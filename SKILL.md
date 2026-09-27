@@ -1,18 +1,18 @@
 ---
-name: wiki-interest
+name: wiki-analyst
 description: Analyze Wikipedia pageview trends to measure public interest in topics and compare language editions (markets). Use when the user asks whether interest in a topic is growing or declining, wants to compare interest across languages/countries or across topics, asks how trustworthy a trend is, wants charts or a one-page PDF report on topic interest, or mentions Wikipedia pageviews, Wikimedia data, market or language selection for a B2C product. Also use it when the user asks about an earlier or previous Wikipedia interest analysis (results are saved and can be looked up).
 ---
 
-# wiki-interest
+# wiki-analyst
 
 The tool does ALL data work and statistics. You translate the request into commands,
 read the JSON they print, and write the answer. Never compute numbers yourself.
 
-`WI` below means: `uv run --project <skill_dir> wiki-interest`
+`WI` below means: `uv run --project <skill_dir> wiki-analyst`
 (`<skill_dir>` = the absolute path of the directory containing this file), e.g.
-`uv run --project "C:/path/to/wiki-interest" wiki-interest resolve "astronomy" --langs uk`.
+`uv run --project "C:/path/to/wiki-analyst" wiki-analyst resolve "astronomy" --langs uk`.
 Run every command from the user's current directory. Never `cd` into `<skill_dir>`:
-results go to `./wiki-interest-runs/<id>/` under the directory you run from.
+results go to `./wiki-analyst-runs/<id>/` under the directory you run from.
 
 ## 1. Setup check (once per session)
 

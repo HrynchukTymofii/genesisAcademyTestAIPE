@@ -2,7 +2,7 @@
 
 Use a spec when the request has several topics, a topic made of several
 articles, filters, explicit dates, or when you are following up on an earlier run.
-Run it with `wiki-interest run <spec.yaml>`. Examples: `specs/examples/`.
+Run it with `wiki-analyst run <spec.yaml>`. Examples: `specs/examples/`.
 
 ## Fields
 
@@ -57,10 +57,10 @@ Fix that field and rerun.
 
 Every run saves `spec.yaml` (topics resolved to QIDs, `end` fixed) in its run dir.
 
-- Quick edits: `wiki-interest run <run_dir> --set period=36m --set languages=pl,cs,sk`
+- Quick edits: `wiki-analyst run <run_dir> --set period=36m --set languages=pl,cs,sk`
   (`--set` takes `key=value`; list fields take commas; nested keys use dots, e.g.
   `--set output.report.lang=uk`; setting `period` clears `start`/`end`).
-- Larger edits: copy `<run_dir>/spec.yaml`, edit, `wiki-interest run <copy>`.
+- Larger edits: copy `<run_dir>/spec.yaml`, edit, `wiki-analyst run <copy>`.
 - `--save-as my.yaml` writes the edited spec for later.
 
 Data already downloaded is cached, so reruns are fast.

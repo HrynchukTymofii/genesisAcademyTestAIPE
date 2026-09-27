@@ -1,6 +1,6 @@
 """Run an AnalysisSpec end to end: resolve -> fetch -> stats -> save run dir.
 
-Run dir layout (./wiki-interest-runs/<id>/):
+Run dir layout (./wiki-analyst-runs/<id>/):
   result.json   full results (compact records + full-precision details)
   spec.yaml     resolved spec (QIDs filled in) — copy/edit/rerun for follow-ups
   series/       <topic>_<lang>_monthly.csv and _daily.csv
@@ -31,7 +31,7 @@ RESULT_FILE = "result.json"
 
 
 def runs_root() -> Path:
-    return Path(os.environ.get("WIKI_INTEREST_RUNS", "wiki-interest-runs"))
+    return Path(os.environ.get("WIKI_ANALYST_RUNS", "wiki-analyst-runs"))
 
 
 # -- pending confirmations -------------------------------------------------------------
@@ -504,9 +504,9 @@ def _next_steps(run_dir: str, spec: AnalysisSpec, summary: dict) -> list[str]:
     steps = []
     if "report" not in summary["files"]:
         steps.append(
-            f'wiki-interest report {run_dir} --summary "<2-4 sentences using numbers above>" --lang en'
+            f'wiki-analyst report {run_dir} --summary "<2-4 sentences using numbers above>" --lang en'
         )
-    steps.append(f"Follow-up: copy {run_dir}/spec.yaml, edit it, then: wiki-interest run <spec.yaml>")
+    steps.append(f"Follow-up: copy {run_dir}/spec.yaml, edit it, then: wiki-analyst run <spec.yaml>")
     return steps
 
 
@@ -522,6 +522,6 @@ def load_run(run_dir: str | Path) -> dict:
     if not f.exists():
         raise WikiInterestError(
             f"No {RESULT_FILE} in {run_dir}.",
-            hint="Pass the run_dir printed by analyze/compare/run (under ./wiki-interest-runs/).",
+            hint="Pass the run_dir printed by analyze/compare/run (under ./wiki-analyst-runs/).",
         )
     return json.loads(f.read_text(encoding="utf-8"))

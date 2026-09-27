@@ -1,6 +1,6 @@
 # Roadmap
 
-How to extend wiki-interest. Each item notes where it plugs in.
+How to extend wiki-analyst. Each item notes where it plugs in.
 
 ## 1. Topic clusters via Wikidata and categories
 

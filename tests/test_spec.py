@@ -6,9 +6,9 @@ import yaml
 from typer.testing import CliRunner
 
 from fixtures.scenarios import CLI_SCENARIOS, EXAMPLES
-from wiki_interest.cli import app
-from wiki_interest.errors import SpecError
-from wiki_interest.spec import apply_overrides, load_spec, validate_spec
+from wiki_analyst.cli import app
+from wiki_analyst.errors import SpecError
+from wiki_analyst.spec import apply_overrides, load_spec, validate_spec
 
 runner = CliRunner()
 

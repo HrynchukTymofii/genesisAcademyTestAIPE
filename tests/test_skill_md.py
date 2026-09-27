@@ -10,7 +10,7 @@ def test_skill_md_frontmatter_and_length():
     assert len(text.splitlines()) <= 150
     _, fm, _ = text.split("---", 2)
     meta = yaml.safe_load(fm)
-    assert meta["name"] == "wiki-interest"
+    assert meta["name"] == "wiki-analyst"
     assert "pageview" in meta["description"].lower()
 
 

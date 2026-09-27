@@ -1,4 +1,4 @@
-"""Cross-check wiki-interest numbers against the Wikimedia monthly endpoint
+"""Cross-check wiki-analyst numbers against the Wikimedia monthly endpoint
 (the data behind pageviews.wmcloud.org). Needs network; not part of pytest.
 
     uv run python tests/evals/cross_check.py
@@ -14,9 +14,9 @@ from urllib.parse import quote
 
 import httpx
 
-from wiki_interest.api import REST_BASE, encode_title, ssl_context, user_agent
-from wiki_interest.api import WikimediaClient
-from wiki_interest.series import Period, build_topic_series
+from wiki_analyst.api import REST_BASE, encode_title, ssl_context, user_agent
+from wiki_analyst.api import WikimediaClient
+from wiki_analyst.series import Period, build_topic_series
 
 PERIOD = Period(date(2025, 1, 1), date(2026, 8, 31))
 CASES = [  # (lang, titles as given, merge_redirects)

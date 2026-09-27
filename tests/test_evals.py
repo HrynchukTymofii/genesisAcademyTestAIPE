@@ -25,9 +25,9 @@ def transcript(tmp_path, name, commands, answer):
     return p
 
 
-RESOLVE = ('uv run --project skill wiki-interest resolve "astronomy" --langs uk', '{"status": "resolved", "qid": "Q333"}')
+RESOLVE = ('uv run --project skill wiki-analyst resolve "astronomy" --langs uk', '{"status": "resolved", "qid": "Q333"}')
 ANALYZE = (
-    "uv run --project skill wiki-interest analyze --qid Q333 --langs uk --period 36m",
+    "uv run --project skill wiki-analyst analyze --qid Q333 --langs uk --period 36m",
     '{"results": [{"trend_pct_per_year": -47.1, "trend_ci95": [-53.2, -41.4], "confidence": "strong"}]}',
 )
 
@@ -72,7 +72,7 @@ def test_parse_transcript_extracts_subcommands(tmp_path):
 
 def test_analysing_after_ambiguity_fails(tmp_path):
     case = {"id": "a", "turns": ["learning English?"]}
-    unsure = ('uv run --project s wiki-interest resolve "learning English" --langs uk',
+    unsure = ('uv run --project s wiki-analyst resolve "learning English" --langs uk',
               '{"status": "needs_confirmation", "qid": "Q2731224"}')
     p = transcript(tmp_path, "a", [unsure, ANALYZE], "Declining -47.1%, confidence strong.")
     r = grade_case(case, [p], tmp_path)
@@ -81,11 +81,11 @@ def test_analysing_after_ambiguity_fails(tmp_path):
 
 def test_confirmation_must_quote_the_user(tmp_path):
     case = {"id": "c", "turns": ["Compare meditation and wellness in Czech Wikipedia"]}
-    made_up = ('uv run --project s wiki-interest compare --qids Q1,Q2 --langs cs --confirmed "the user agreed to proceed"',
+    made_up = ('uv run --project s wiki-analyst compare --qids Q1,Q2 --langs cs --confirmed "the user agreed to proceed"',
                '{"ok": true, "results": []}')
     r = grade_case(case, [transcript(tmp_path, "c", [made_up], "Done.")], tmp_path)
     assert r["checks"]["confirmation_quotes_user"] is False
-    quoted = ('uv run --project s wiki-interest compare --qids Q1,Q2 --langs cs --confirmed "meditation and wellness"',
+    quoted = ('uv run --project s wiki-analyst compare --qids Q1,Q2 --langs cs --confirmed "meditation and wellness"',
               '{"ok": true, "results": []}')
     r = grade_case(case, [transcript(tmp_path, "c2", [quoted], "Done.")], tmp_path)
     assert r["checks"]["confirmation_quotes_user"] is True

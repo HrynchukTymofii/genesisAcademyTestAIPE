@@ -5,9 +5,9 @@ import pytest
 from typer.testing import CliRunner
 
 from fixtures.scenarios import CLI_SCENARIOS
-from wiki_interest.cli import app
-from wiki_interest.engine import load_run
-from wiki_interest.report import check_summary_numbers, count_pdf_pages
+from wiki_analyst.cli import app
+from wiki_analyst.engine import load_run
+from wiki_analyst.report import check_summary_numbers, count_pdf_pages
 
 runner = CliRunner()
 
@@ -78,7 +78,7 @@ def test_guard_accepts_real_numbers_in_local_formats(run_dir):
 
 
 def test_chart_warns_when_series_are_omitted(run_dir, monkeypatch):
-    import wiki_interest.charts as charts
+    import wiki_analyst.charts as charts
 
     monkeypatch.setattr(charts, "MAX_SERIES", 1)
     code, out = cli(["chart", run_dir, "--kind", "indexed"])
@@ -94,7 +94,7 @@ def test_report_lists_clickable_sources(run_dir):
 
 
 def test_guard_ignores_digits_inside_links():
-    from wiki_interest.report import allowed_numbers
+    from wiki_analyst.report import allowed_numbers
 
     result = {"period": {"months": 24}, "results": [
         {"trend_pct_per_year": -5.0,

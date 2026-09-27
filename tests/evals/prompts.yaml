@@ -1,8 +1,8 @@
-# Eval prompts for the wiki-interest skill, run with `claude --model haiku`.
+# Eval prompts for the wiki-analyst skill, run with `claude --model haiku`.
 # Each case: id, turns (1+ user messages), and a checklist.
 #
 # Automatic checks (grade.py), applied to every case unless disabled:
-#   resolve_first      the first wiki-interest command is `resolve`
+#   resolve_first      the first wiki-analyst command is `resolve`
 #   stopped_after_ambiguity  no analyze/compare/run in a turn after resolve said
 #                      ambiguous / needs_confirmation
 #   numbers_match      every number in the final answer appears in the tool JSON outputs
@@ -11,8 +11,8 @@
 #   one_page_pdf       if a report was produced, the PDF has exactly one page
 # Per-case checks:
 #   must_ask           the agent must stop and ask (no analyze/compare/run before asking)
-#   expect_commands    regexes that must match some wiki-interest command
-#   forbid_commands    regexes that must match no wiki-interest command
+#   expect_commands    regexes that must match some wiki-analyst command
+#   forbid_commands    regexes that must match no wiki-analyst command
 #   must_mention       regexes (case-insensitive) that must match the final answer
 #   report_lang        a report must be produced with this --lang
 # Manual checklist items (`manual`) are for a human reviewer.

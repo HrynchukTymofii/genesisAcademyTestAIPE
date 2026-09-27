@@ -3,7 +3,7 @@ import json
 from typer.testing import CliRunner
 
 from fixtures.scenarios import CLI_SCENARIOS
-from wiki_interest.cli import app
+from wiki_analyst.cli import app
 
 runner = CliRunner()
 

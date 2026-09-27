@@ -4,7 +4,7 @@ import numpy as np
 import pandas as pd
 import pytest
 
-from wiki_interest import stats
+from wiki_analyst import stats
 
 START = "2022-09-01"
 

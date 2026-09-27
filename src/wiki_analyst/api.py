@@ -27,13 +27,13 @@ META_TTL = 7 * 24 * 3600  # Wikidata search / sitelinks / redirects
 
 
 def user_agent() -> str:
-    contact = os.environ.get("WIKI_INTEREST_CONTACT", DEFAULT_CONTACT)
-    return f"wiki-interest/{__version__} ({contact}) httpx/{httpx.__version__}"
+    contact = os.environ.get("WIKI_ANALYST_CONTACT", DEFAULT_CONTACT)
+    return f"wiki-analyst/{__version__} ({contact}) httpx/{httpx.__version__}"
 
 
 def today() -> date:
-    """Current date; override with WIKI_INTEREST_TODAY=YYYY-MM-DD (tests, reproducibility)."""
-    env = os.environ.get("WIKI_INTEREST_TODAY")
+    """Current date; override with WIKI_ANALYST_TODAY=YYYY-MM-DD (tests, reproducibility)."""
+    env = os.environ.get("WIKI_ANALYST_TODAY")
     if env:
         return datetime.strptime(env, "%Y-%m-%d").date()
     return date.today()
@@ -94,7 +94,7 @@ class WikimediaClient:
             follow_redirects=True,
             verify=ssl_context(),
         )
-        record = os.environ.get("WIKI_INTEREST_RECORD_DIR")
+        record = os.environ.get("WIKI_ANALYST_RECORD_DIR")
         self._record_dir = Path(record) if record else None
 
     # -- core ---------------------------------------------------------------
@@ -149,7 +149,7 @@ class WikimediaClient:
         )
 
     def _record(self, url: str, status: int, body: str) -> None:
-        """Save responses as test fixtures when WIKI_INTEREST_RECORD_DIR is set."""
+        """Save responses as test fixtures when WIKI_ANALYST_RECORD_DIR is set."""
         if self._record_dir is None:
             return
         self._record_dir.mkdir(parents=True, exist_ok=True)
