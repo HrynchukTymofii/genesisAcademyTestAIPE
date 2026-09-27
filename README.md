@@ -56,6 +56,9 @@ Environment variables (all optional):
 | `resolve "<topic>" --langs pl,cs` | Topic → Wikidata QID → article per language. Status `resolved`, `needs_confirmation`, `ambiguous` or `not_found`. |
 | `analyze --qid Q.. [--qid ..] --langs .. --period 24m [--start --end] [--metric share\|raw] [--article lang:Title]` | One topic (entities/articles summed) across languages. |
 | `compare --qids Q1,Q2 --langs .. --period 36m` | Several topics side by side. |
+| `... --rank-by growth=0.6,share=0.4 [--min-confidence moderate]` | Rank by the user's own criteria (growth, share, volume, certainty); explained scores. |
+| `... --min-daily-views 10` / `--note "<user request>"` | Ignore tiny series in rankings / store the request so the run can be found later. |
+| `history "<keywords>"` / `history --run <run_dir>` | Find earlier analyses (also in a new session) and re-read their numbers. |
 | `run <spec.yaml\|run_dir> [--set key=value]` | Composite requests and follow-ups from a YAML spec. |
 | `chart <run_dir> --kind indexed\|share\|raw` | PNG chart. |
 | `report <run_dir> --summary "…" --lang en\|uk\|pl\|cs` | One-page PDF. |
@@ -108,7 +111,7 @@ Key decisions:
 
 ## How it was tested
 
-**Unit and integration tests** — `uv run pytest` (78 tests, no network; also run by GitHub Actions on Ubuntu and Windows):
+**Unit and integration tests** — `uv run pytest` (88 tests, no network; also run by GitHub Actions on Ubuntu and Windows):
 - Statistics on synthetic series of known shape: flat, linear growth, flat + single
   spike, spikes that fake growth, seasonal, edition growth (raw up / share flat), low
   volume, short series, article created mid-period; exact Theil–Sen on a line with a
