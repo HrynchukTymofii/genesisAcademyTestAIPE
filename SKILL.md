@@ -27,8 +27,11 @@ results go to `./wiki-interest-runs/<id>/` under the directory you run from.
 1. **Resolve** every topic: `WI resolve "<topic>" --langs pl,cs`
    - `resolved` → tell the user in one line which entity you use (label + description).
      If the description clearly is not what they mean, treat it as ambiguous.
-   - `needs_confirmation` or `ambiguous` → STOP. Show the candidates (label — description)
-     and ask the user to choose. Never pick one yourself.
+   - `needs_confirmation` or `ambiguous` → STOP and end your turn with a question.
+     Show the candidates (label — description) and ask the user to choose. Do NOT
+     analyze anything else instead (no broader or "closest" entity). You may propose
+     options, e.g. for "learning English": exam articles summed (TOEFL + IELTS) or
+     "English as a second language", but wait for the user's answer.
    - `not_found` → try the English name or a synonym, then ask the user.
    - `missing` languages → say so explicitly. If `search_suggestions` appear later in
      analyze output, ask the user before using one with `--article lang:Title`.
@@ -38,18 +41,23 @@ results go to `./wiki-interest-runs/<id>/` under the directory you run from.
    `comparisons`, `missing`.
 4. **Answer in the user's language** (template below).
 5. **Offer** a chart (`WI chart <run_dir> --kind indexed`) and/or a one-page report.
+   Make a chart or report only when the user asks for one.
 
 ## 3. Decision tree
 
 - One topic, one or more languages → `WI analyze --qid Q.. --langs a,b --period 24m`
   - Topic = several entities summed → repeat `--qid` (`--qid Q1 --qid Q2`).
 - Several topics side by side → `WI compare --qids Q1,Q2 --langs a,b --period 24m`
-- Filters, explicit dates, topics with extra articles, multi-step or composite
+- Both commands accept: `--start YYYY-MM --end YYYY-MM` (explicit dates, replace
+  `--period`), `--min-daily-views N` ("ignore series under N views/day"),
+  `--metric raw`.
+- Topics with extra articles, multi-step or composite
   requests → write a spec YAML (see `references/spec-schema.md`, copy from
   `specs/examples/`) and `WI run spec.yaml`.
 - Nothing above fits → short script using the library (`references/library-api.md`).
 
 Period: user's wording ("2 years" → `24m`, "3 years" → `36m`). Default `24m`.
+User gives dates ("from 2023-01 to 2025-12") → `--start 2023-01 --end 2025-12`.
 Use `36m` or more when the user asks about trust or seasonality.
 Use `--metric raw` only if the user explicitly asks for raw views.
 
@@ -72,8 +80,12 @@ Cached data makes reruns fast.
 ## 6. Hard rules
 
 - Never compute, estimate or round statistics yourself; copy numbers from the JSON.
-- Always state the `confidence` label for each claim, and that trends use
-  **share of edition traffic** (views per million views of that Wikipedia edition).
+  No derived numbers either: no differences, ratios, multiples ("2.7× faster"),
+  averages or sums. Say it in words ("declines faster than the edition overall").
+- Always state the `confidence` label for each claim, in English as printed, also
+  when answering in another language: "впевненість: moderate (помірна)". Trends use
+  **share of edition traffic** (views per million views of that Wikipedia edition);
+  say so.
 - Compare languages by trend %/yr, share, or index — never by raw view counts.
 - Say that pageviews signal interest, not willingness to pay.
 - Quote relevant `warnings` as caveats (spikes, low volume, seasonality, edition decline).

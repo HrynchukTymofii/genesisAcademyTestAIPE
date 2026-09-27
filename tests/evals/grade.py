@@ -106,7 +106,19 @@ def grade_case(case: dict, transcripts: list[Path], workdir: Path) -> dict:
         checks["must_ask"] = not any(c[0] in ANALYSIS_CMDS for c in first) and "?" in turns[0]["answer"]
     else:
         checks["resolve_first"] = bool(first) and first[0][0] == "resolve"
-        checks["confidence_label"] = bool(CONF_RE.search(answer))
+        analysed = any(c[0] in ANALYSIS_CMDS and '"ok": true' in c[2] for c in turns[-1]["commands"])
+        if analysed:  # no analysis (e.g. no article exists) -> no label to state
+            checks["confidence_label"] = bool(CONF_RE.search(answer))
+
+    # Never analyse something else after resolve said "ask the user" (same turn).
+    for i, t in enumerate(turns, start=1):
+        unclear = False
+        for sub, _, out in t["commands"]:
+            if sub == "resolve" and re.search(r'"status":\s*"(ambiguous|needs_confirmation)"', out):
+                unclear = True
+            elif unclear and sub in ANALYSIS_CMDS:
+                checks[f"stopped_after_ambiguity(turn {i})"] = False
+                break
 
     sources = [c[2] for c in all_cmds] + list(case["turns"])
     bad = unsupported_numbers(answer, sources)

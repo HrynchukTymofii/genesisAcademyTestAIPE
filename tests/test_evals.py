@@ -68,3 +68,12 @@ def test_parse_transcript_extracts_subcommands(tmp_path):
     t = parse_transcript(p)
     assert [c[0] for c in t["commands"]] == ["resolve", "analyze"]
     assert t["answer"] == "done"
+
+
+def test_analysing_after_ambiguity_fails(tmp_path):
+    case = {"id": "a", "turns": ["learning English?"]}
+    unsure = ('uv run --project s wiki-interest resolve "learning English" --langs uk',
+              '{"status": "needs_confirmation", "qid": "Q2731224"}')
+    p = transcript(tmp_path, "a", [unsure, ANALYZE], "Declining -47.1%, confidence strong.")
+    r = grade_case(case, [p], tmp_path)
+    assert r["checks"]["stopped_after_ambiguity(turn 1)"] is False

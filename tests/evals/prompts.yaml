@@ -2,9 +2,11 @@
 # Each case: id, turns (1+ user messages), and a checklist.
 #
 # Automatic checks (grade.py), applied to every case unless disabled:
-#   resolve_first      the first wiki-interest command is `resolve` (off for follow-ups)
+#   resolve_first      the first wiki-interest command is `resolve`
+#   stopped_after_ambiguity  no analyze/compare/run in a turn after resolve said
+#                      ambiguous / needs_confirmation
 #   numbers_match      every number in the final answer appears in the tool JSON outputs
-#   confidence_label   the answer contains a confidence label (strong|moderate|weak|insufficient)
+#   confidence_label   the answer contains a confidence label (only if an analysis ran)
 #   one_page_pdf       if a report was produced, the PDF has exactly one page
 # Per-case checks:
 #   must_ask           the agent must stop and ask (no analyze/compare/run before asking)
@@ -39,9 +41,13 @@ cases:
         Compare interest in learning English across the Ukrainian, Polish, Czech, Romanian,
         Turkish and Vietnamese Wikipedias over 3 years. Give me a one-page report on which
         audiences to research next and why.
+      - >-
+        Use the TOEFL and IELTS articles plus "English as a second or foreign language",
+        summed together as the topic.
     report_lang: en
     manual:
-      - Does not silently use Q2731224 (VOA programme); asks or builds a topic set (e.g. TOEFL/IELTS/ESL).
+      - Turn 1 asks which meaning to use (VOA programme is not the concept) and proposes options.
+      - Turn 2 sums the three entities (repeated --qid or a spec with qids) and makes the report.
       - Report recommendation ranks audiences using growth AND share, with confidence.
 
   - id: ambiguous-mercury
@@ -83,9 +89,9 @@ cases:
     turns:
       - Is interest in physics growing in Czech Wikipedia?
       - What does it look like in raw views instead of share?
-    expect_commands: ["metric[= ]raw"]
     manual:
-      - Explains that raw views include edition-wide traffic changes.
+      - Uses the raw-views trend from the JSON (or reruns with --metric raw).
+      - Explains that raw views include edition-wide traffic changes; no computed ratios.
 
   - id: composite-topics-filter
     turns:
@@ -93,9 +99,9 @@ cases:
         For astronomy, physics and chemistry, compare interest in Ukrainian, Polish and
         Czech Wikipedia over 3 years, ignore series under 10 views per day, and tell me
         which topic-language pair is growing best.
-    expect_commands: ["run .*\\.yaml|compare "]
+    expect_commands: ["min-daily-views|min_median_daily_views"]
     manual:
-      - Uses a spec with options.min_median_daily_views or explains the filter.
+      - Applies the 10 views/day filter (--min-daily-views 10 or a spec option).
       - Names the best pair with its confidence; says if nothing is growing.
 
   - id: ukrainian-user
