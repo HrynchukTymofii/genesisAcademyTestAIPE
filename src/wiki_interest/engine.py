@@ -20,7 +20,7 @@ import pandas as pd
 
 from . import __version__
 from .api import WikimediaClient
-from .errors import AmbiguousTopicError, ResolveError, WikiInterestError
+from .errors import AmbiguousTopicError, ConfirmationRequired, ResolveError, WikiInterestError
 from .resolve import Entity, domain_for, entity_info, missing_message, resolve_topic
 from .series import auto_base_months, build_topic_series, indexed, parse_period
 from .spec import AnalysisSpec, TopicSpec, dump_spec
@@ -31,6 +31,66 @@ RESULT_FILE = "result.json"
 
 def runs_root() -> Path:
     return Path(os.environ.get("WIKI_INTEREST_RUNS", "wiki-interest-runs"))
+
+
+# -- pending confirmations -------------------------------------------------------------
+# A rule in SKILL.md ("stop and ask after an ambiguous resolve") was followed only some of
+# the time by a small model in evals, so it is enforced here: an unanswered ambiguity
+# blocks analysis until the agent passes --confirmed (after the user has chosen).
+PENDING_FILE = ".pending-confirmation.json"
+PENDING_TTL = 6 * 3600
+
+
+def _pending_path() -> Path:
+    return runs_root() / PENDING_FILE
+
+
+def record_pending(query: str, status: str, candidates: list[dict]) -> None:
+    path = _pending_path()
+    path.parent.mkdir(parents=True, exist_ok=True)
+    items = [p for p in _read_pending() if p["query"] != query]
+    items.append(
+        {
+            "query": query,
+            "status": status,
+            "candidates": [
+                {"qid": c.get("qid"), "label": c.get("label"), "description": c.get("description")}
+                for c in candidates[:6]
+            ],
+            "created": datetime.now().timestamp(),
+        }
+    )
+    path.write_text(json.dumps(items, ensure_ascii=False), encoding="utf-8")
+
+
+def _read_pending() -> list[dict]:
+    path = _pending_path()
+    if not path.exists():
+        return []
+    try:
+        items = json.loads(path.read_text(encoding="utf-8"))
+    except (OSError, json.JSONDecodeError):
+        return []
+    now = datetime.now().timestamp()
+    return [p for p in items if now - p.get("created", 0) < PENDING_TTL]
+
+
+def check_pending(confirmed: bool) -> None:
+    """Raise if an ambiguity is waiting for the user; ``confirmed`` clears it."""
+    if confirmed:
+        _pending_path().unlink(missing_ok=True)
+        return
+    items = _read_pending()
+    if items:
+        p = items[-1]
+        options = "; ".join(f"{c['qid']} {c['label']} — {c['description']}" for c in p["candidates"])
+        raise ConfirmationRequired(
+            f"'{p['query']}' is {p['status']}: the user has not chosen an entity yet. "
+            f"Options: {options}",
+            hint="Ask the user which one they mean (or which articles to use) and end your turn. "
+            "Do not analyse a substitute topic. After the user answers (or has moved on to a "
+            "different topic), rerun with --confirmed.",
+        )
 
 
 def slugify(text: str, fallback: str = "x") -> str:
@@ -54,6 +114,8 @@ def _resolve_topic(client, t: TopicSpec, langs: list[str], i: int) -> dict:
     resolved_spec = t.model_copy(deep=True)
     if t.text:
         r = resolve_topic(client, t.text, langs)
+        if r["status"] in ("ambiguous", "needs_confirmation"):
+            record_pending(t.text, r["status"], r.get("candidates") or [r, *r.get("alternatives", [])])
         if r["status"] == "ambiguous":
             raise AmbiguousTopicError(
                 f"Topic '{t.text}' (topics[{i}]) is ambiguous.",
@@ -265,9 +327,13 @@ def new_run_dir(spec: AnalysisSpec, label_hint: str) -> Path:
 
 
 def run_analysis(
-    spec: AnalysisSpec, command: str = "run", client: WikimediaClient | None = None
+    spec: AnalysisSpec,
+    command: str = "run",
+    client: WikimediaClient | None = None,
+    confirmed: bool = False,
 ) -> dict:
     """Execute the spec. Returns the compact JSON summary (also saved in result.json)."""
+    check_pending(confirmed)
     client = client or WikimediaClient()
     period = parse_period(spec.period, spec.start, spec.end)
     topics = [_resolve_topic(client, t, spec.languages, i) for i, t in enumerate(spec.topics)]

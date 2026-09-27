@@ -91,3 +91,15 @@ def test_needs_confirmation(recorded):
 def test_missing_spec_file(env):
     code, out = cli(["run", "nope.yaml"])
     assert code == 1 and out["error"] == "spec_error"
+
+
+def test_ambiguity_blocks_analysis_until_confirmed(recorded):
+    code, out = cli(CLI_SCENARIOS["needs_confirmation"])
+    assert out["status"] == "needs_confirmation"
+    code, out = cli(CLI_SCENARIOS["astronomy_uk"])  # a substitute topic: blocked
+    assert code == 1 and out["error"] == "confirmation_required"
+    assert "--confirmed" in out["next_step"] and "Q2731224" in out["message"]
+    code, out = cli(CLI_SCENARIOS["astronomy_uk"] + ["--confirmed"])  # user answered
+    assert code == 0
+    code, out = cli(CLI_SCENARIOS["astronomy_uk"])  # cleared
+    assert code == 0

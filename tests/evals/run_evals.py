@@ -90,6 +90,8 @@ def main() -> int:
             continue
         for old in (workdir / "transcripts").glob(f"{case['id']}.turn*.jsonl"):
             old.unlink()
+        # each case is a fresh conversation: drop another case's unanswered ambiguity
+        (workdir / "wiki-interest-runs" / ".pending-confirmation.json").unlink(missing_ok=True)
         session = None
         for i, turn in enumerate(case["turns"], start=1):
             out = workdir / "transcripts" / f"{case['id']}.turn{i}.jsonl"

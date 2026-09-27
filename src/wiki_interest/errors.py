@@ -48,3 +48,7 @@ class DataError(WikiInterestError):
 
 class SummaryGuardError(WikiInterestError):
     code = "summary_numbers_not_in_results"
+
+
+class ConfirmationRequired(WikiInterestError):
+    code = "confirmation_required"

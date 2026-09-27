@@ -68,6 +68,10 @@ def resolve(
     def go():
         client = WikimediaClient()
         out = resolve_topic(client, topic, validate_langs(_split(langs)), limit=limit)
+        if out["status"] in ("ambiguous", "needs_confirmation"):
+            from .engine import record_pending
+
+            record_pending(topic, out["status"], out.get("candidates") or [out, *out.get("alternatives", [])])
         out = {"ok": True, "command": "resolve", **out}
         if out["status"] in ("resolved", "needs_confirmation"):
             cmd = f"wiki-interest analyze --qid {out['qid']} --langs {langs} --period 24m"
@@ -105,6 +109,7 @@ def analyze(
     metric: str = typer.Option("share", "--metric", help="share (default, for verdicts) or raw."),
     charts: str = typer.Option("", "--charts", help="Also draw charts: indexed,share,raw."),
     min_daily_views: float = typer.Option(0, "--min-daily-views", help="Exclude series with a lower median views/day from rankings."),
+    confirmed: bool = typer.Option(False, "--confirmed", help="Only after the user chose an entity following an ambiguous resolve."),
 ):
     """One topic (one or more entities/articles summed) across one or more languages."""
 
@@ -134,7 +139,7 @@ def analyze(
                 "output": {"charts": _charts(charts)},
             }
         )
-        return run_analysis(spec, command="analyze")
+        return run_analysis(spec, command="analyze", confirmed=confirmed)
 
     _run(go)
 
@@ -149,6 +154,7 @@ def compare(
     metric: str = typer.Option("share", "--metric"),
     charts: str = typer.Option("", "--charts", help="Also draw charts: indexed,share,raw."),
     min_daily_views: float = typer.Option(0, "--min-daily-views", help="Exclude series with a lower median views/day from rankings."),
+    confirmed: bool = typer.Option(False, "--confirmed", help="Only after the user chose an entity following an ambiguous resolve."),
 ):
     """Several topics side by side in one or more languages."""
 
@@ -163,7 +169,7 @@ def compare(
                 "output": {"charts": _charts(charts)},
             }
         )
-        return run_analysis(spec, command="compare")
+        return run_analysis(spec, command="compare", confirmed=confirmed)
 
     _run(go)
 
@@ -173,6 +179,7 @@ def run(
     spec_path: str = typer.Argument(..., help="spec.yaml, or a previous run dir (reuses its spec)."),
     set_: list[str] = typer.Option([], "--set", help="Override: key=value, e.g. period=36m, languages=pl,cs,sk."),
     save_as: Optional[str] = typer.Option(None, "--save-as", help="Also write the edited spec to this path."),
+    confirmed: bool = typer.Option(False, "--confirmed", help="Only after the user chose an entity following an ambiguous resolve."),
 ):
     """Run a YAML analysis spec (composite requests, follow-ups)."""
 
@@ -185,7 +192,7 @@ def run(
             from pathlib import Path
 
             dump_spec(spec, Path(save_as))
-        return run_analysis(spec, command="run")
+        return run_analysis(spec, command="run", confirmed=confirmed)
 
     _run(go)
 

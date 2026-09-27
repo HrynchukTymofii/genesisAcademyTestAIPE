@@ -31,7 +31,9 @@ results go to `./wiki-interest-runs/<id>/` under the directory you run from.
      Show the candidates (label — description) and ask the user to choose. Do NOT
      analyze anything else instead (no broader or "closest" entity). You may propose
      options, e.g. for "learning English": exam articles summed (TOEFL + IELTS) or
-     "English as a second language", but wait for the user's answer.
+     "English as a second language", but wait for the user's answer. The tool enforces
+     this: analysis fails with `confirmation_required` until you pass `--confirmed`,
+     which you may do only after the user has answered.
    - `not_found` → try the English name or a synonym, then ask the user.
    - `missing` languages → say so explicitly. If `search_suggestions` appear later in
      analyze output, ask the user before using one with `--article lang:Title`.
