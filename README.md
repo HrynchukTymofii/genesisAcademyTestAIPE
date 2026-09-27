@@ -5,6 +5,9 @@ decide **which topics to develop and which language markets to launch in**. It f
 data, computes trend statistics you can trust, draws charts and writes a one-page PDF
 report.
 
+**New here? Read [`docs/GUIDE.md`](docs/GUIDE.md)**: how it all works, the statistics
+in plain language, how it was verified, weak points, and links (about 3 hours).
+
 It is designed to be driven by a small, cheap model (Claude Haiku 4.5). The code does
 all data work and statistics. The model only translates requests into commands, reads
 compact JSON, and writes the prose.
@@ -105,7 +108,7 @@ Key decisions:
 
 ## How it was tested
 
-**Unit and integration tests** — `uv run pytest` (71 tests, no network):
+**Unit and integration tests** — `uv run pytest` (72 tests, no network; also run by GitHub Actions on Ubuntu and Windows):
 - Statistics on synthetic series of known shape: flat, linear growth, flat + single
   spike, spikes that fake growth, seasonal, edition growth (raw up / share flat), low
   volume, short series, article created mid-period; exact Theil–Sen on a line with a
