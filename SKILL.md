@@ -87,6 +87,10 @@ Cached data makes reruns fast.
   **share of edition traffic** (views per million views of that Wikipedia edition);
   say so.
 - Compare languages by trend %/yr, share, or index — never by raw view counts.
+- Never rank or sort results yourself: use `comparisons` (`ranked_by_trend`,
+  `overall_ranked_by_trend`). For "compared with the whole Wikipedia" quote
+  `relative_to_edition`.
+- Use command output as printed; do not reformat it (no `ConvertTo-Json`, `jq`).
 - Say that pageviews signal interest, not willingness to pay.
 - Quote relevant `warnings` as caveats (spikes, low volume, seasonality, edition decline).
 - `insufficient_data` or `weak` → say the data cannot support a conclusion.

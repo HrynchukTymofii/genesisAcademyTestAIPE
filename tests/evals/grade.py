@@ -40,6 +40,7 @@ def parse_transcript(path: Path) -> dict:
     """Return {commands: [(subcommand, command, output)], answer: str}."""
     calls: dict[str, str] = {}
     commands = []
+    outputs = []  # every tool result (Read, Get-Content…), numbers may come from any
     answer = ""
     for line in path.read_text(encoding="utf-8").splitlines():
         try:
@@ -55,13 +56,14 @@ def parse_transcript(path: Path) -> dict:
         elif ev.get("type") == "user":
             for c in ev.get("message", {}).get("content", []) or []:
                 if isinstance(c, dict) and c.get("type") == "tool_result":
+                    outputs.append(_text(c.get("content")))
                     cmd = calls.get(c.get("tool_use_id"), "")
                     m = re.search(r"wiki-interest(?:\.exe)?\s+([a-z]+)", cmd)
                     if m and m.group(1) != "help":
                         commands.append((m.group(1), cmd, _text(c.get("content"))))
         elif ev.get("type") == "result" and ev.get("result"):
             answer = ev["result"]
-    return {"commands": commands, "answer": answer}
+    return {"commands": commands, "answer": answer, "outputs": outputs}
 
 
 # -- checks --------------------------------------------------------------------------------
@@ -115,12 +117,15 @@ def grade_case(case: dict, transcripts: list[Path], workdir: Path) -> dict:
         unclear = False
         for sub, _, out in t["commands"]:
             if sub == "resolve" and re.search(r'"status":\s*"(ambiguous|needs_confirmation)"', out):
-                unclear = True
+                label = re.search(r'"label":\s*"([^"]+)"', out)
+                user_text = case["turns"][i - 1].lower()
+                named = label and label.group(1).lower() in user_text  # user already chose it
+                unclear = unclear or not named
             elif unclear and sub in ANALYSIS_CMDS:
                 checks[f"stopped_after_ambiguity(turn {i})"] = False
                 break
 
-    sources = [c[2] for c in all_cmds] + list(case["turns"])
+    sources = [o for t in turns for o in t["outputs"]] + list(case["turns"])
     bad = unsupported_numbers(answer, sources)
     checks["numbers_match"] = not bad
     if bad:
