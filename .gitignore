@@ -1,0 +1,15 @@
+# local study notes, not part of the skill
+docs/
+
+# Python / uv
+__pycache__/
+*.pyc
+.venv/
+.pytest_cache/
+*.egg-info/
+dist/
+build/
+
+# analysis outputs and caches
+wiki-interest-runs/
+*.sqlite
